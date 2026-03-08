@@ -16,8 +16,13 @@ const supabaseKey = process.env.SUPABASE_KEY
 const app = express()
 app.use(express.json())
 app.use(cors({
-    origin: true, 
-    credentials: true
+    origin: [
+        'http://localhost:5173', 
+        'https://rest-api-ecosystem-frontend.onrender.com'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
 // Response middleware for standardized API responses
