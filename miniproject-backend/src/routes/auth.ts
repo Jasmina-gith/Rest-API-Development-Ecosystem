@@ -15,12 +15,12 @@ router.get('/', authorize, (req, res: AuthResponse) => {
             return;
         }
 
-        const { password, ...user} = data[0]
+        const { password_hash, ...user} = data[0]
         res.status(200).json(user)
     })
 })
 
-router.post('/register', async (req,res) => {
+router.post('/register', async (req, res) => {
     if(req.body.username.length<3) {
         res.status(400).json({ error: "Username field should have atleast 3 characters"})
         return;
@@ -31,10 +31,10 @@ router.post('/register', async (req,res) => {
     }
 
     const username = req.body.username
-    bcrypt.hash(req.body.password, 10, (err, password) => {
+    bcrypt.hash(req.body.password, 10, (err, password_hash) => {
         if(err) return res.status(500).json({ err });
 
-        Pool.from('users').insert({ username, password }).select()
+        Pool.from('users').insert({ username, password_hash }).select()
         .then(async result => {
             if (result.error) {
                 res.status(400).json(result.error.message);
@@ -55,7 +55,7 @@ router.post('/login', async (req,res) => {
     const username = req.body.username
     const password = req.body.password
 
-    const { data, error } = await Pool.from('users').select('user_id, username, password').eq('username', username);
+    const { data, error } = await Pool.from('users').select('user_id, username, password_hash').eq('username', username);
     if (error) {
         res.status(500).json(error);
         return;
@@ -67,7 +67,7 @@ router.post('/login', async (req,res) => {
         return;
     }
 
-    bcrypt.compare(password, user.password, async (err, result) => {
+    bcrypt.compare(password, user.password_hash, async (err, result) => {
         if(err) return res.status(500).json({ error: err.message })
         if(!result) return res.status(200).json({ error: "Wrong Password" });
 
