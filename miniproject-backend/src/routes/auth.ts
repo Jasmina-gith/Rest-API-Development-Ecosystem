@@ -8,7 +8,7 @@ import { authorize } from '../utils'
 const router = Router()
 
 router.get('/', authorize, (req, res: AuthResponse) => {
-    Pool.from('Users').select().eq('user_id', res.user?.userId)
+    Pool.from('users').select().eq('user_id', res.user?.userId)
     .then(({ data, error}) => {
         if (error) {
             res.status(500).json({ error: error.message })
@@ -34,7 +34,7 @@ router.post('/register', async (req,res) => {
     bcrypt.hash(req.body.password, 10, (err, password) => {
         if(err) return res.status(500).json({ err });
 
-        Pool.from('Users').insert({ username, password }).select()
+        Pool.from('users').insert({ username, password }).select()
         .then(async result => {
             if (result.error) {
                 res.status(400).json(result.error.message);
@@ -55,7 +55,7 @@ router.post('/login', async (req,res) => {
     const username = req.body.username
     const password = req.body.password
 
-    const { data, error } = await Pool.from('Users').select('user_id, username, password').eq('username', username);
+    const { data, error } = await Pool.from('users').select('user_id, username, password').eq('username', username);
     if (error) {
         res.status(500).json(error);
         return;
@@ -85,7 +85,7 @@ router.post('/refresh', (req,res) => {
         return;
     }
 
-    Pool.from("Tokens").delete().eq('token', token).select()
+    Pool.from("tokens").delete().eq('token', token).select()
     .then((result) => {
         if(!result.data?.length) return res.status(403).json({ error: "invalid refresh token" });
 
@@ -111,7 +111,7 @@ router.post('/logout', (req,res: AuthResponse) => {
     jwt.verify(token, process.env.REFRESH_KEY as string, (err: any, user: any) => {
         if(err) return res.status(403).json({ error: "Unauthorized access" });
     
-        Pool.from('Tokens').delete().eq('token', token).select()
+        Pool.from('tokens').delete().eq('token', token).select()
         .then(result => {
             const tokenExists = result.data?.length
             if(!tokenExists) return res.status(201).json({ error: "Invalid session" });
@@ -128,7 +128,7 @@ function getAccessToken(data: JwtPayload) {
 
 async function getRefreshToken(data: JwtPayload) {
     const token =  jwt.sign(data, process.env.REFRESH_KEY as string, { expiresIn: '1d' })
-    return await Pool.from('Tokens').insert({ token })
+    return await Pool.from('tokens').insert({ token })
     .then(() => token)
 }
 

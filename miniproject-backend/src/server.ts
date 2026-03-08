@@ -1,5 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
+import { config } from 'dotenv'
+config()
 import proxy from './routes/proxy'
 import auth from './routes/auth'
 import projects from './routes/projects'
@@ -8,9 +10,15 @@ import logs from './routes/logs'
 import { responseMiddleware } from './middleware/response'
 import Pool from './database'
 
+const supabaseUrl = process.env.SUPABASE_URL || 'https://svdeakdjjchmnyjucxhh.supabase.co'
+const supabaseKey = process.env.SUPABASE_KEY
+
 const app = express()
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}))
 
 // Response middleware for standardized API responses
 app.use(responseMiddleware)
@@ -40,7 +48,7 @@ app.get('/api/health', async (req: Request, res: Response): Promise<void> => {
     
     try {
         // Try to connect to database using Supabase
-        const { error } = await Pool.from('Projects').select('project_id').limit(1)
+const { error } = await Pool.from('projects').select('project_id').limit(1)
         
         const latency = Date.now() - start
         
