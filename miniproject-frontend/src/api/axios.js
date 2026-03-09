@@ -2,8 +2,8 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'
 import { getCookie, setCookie } from '../utils/utils';
 
-// 4. Environment Safety - Use env variable with fallback to localhost:10000
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:10000/"
+// 4. Environment Safety - Use production Render URL for deployment
+const baseURL = import.meta.env.VITE_API_BASE_URL || "https://rest-api-ecosystem-backend.onrender.com"
 
 export function useAxios() {
     return axios.create({ baseURL })
@@ -39,7 +39,7 @@ axiosJwt.interceptors.response.use(res => res,
 )
 
 async function refresh() {
-    await axios.post(baseURL + 'auth/refresh', { token: getCookie('ref') })
+    await axios.post('https://rest-api-ecosystem-backend.onrender.com/auth/refresh', { token: getCookie('ref') })
     .then(res => {
         setCookie('auth', res.data.accessToken)
         setCookie('ref', res.data.refreshToken)

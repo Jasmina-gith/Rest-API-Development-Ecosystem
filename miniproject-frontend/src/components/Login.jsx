@@ -19,7 +19,7 @@ export default function Login({ setLogin, setSignup }) {
         const password = form[1].value
 
         const data = { username, password }
-        axios.post('http://localhost:10000/auth/login', data)
+        axios.post('/auth/login', data)
         .then(res => {
             if(res.data.error) return setError(res.data.error);
 

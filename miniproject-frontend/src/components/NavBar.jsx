@@ -6,6 +6,7 @@ import AuthContext from "../context/AuthContext"
 import Projects from "./Projects"
 import { convertToOpenAPI, getCurrentProject } from "../utils/utils"
 import AuditLogs from "./AuditLogs"
+import { useAxios } from "../api/axios"
 
 export default function NavBar({ setLogin, projects, setTabs, setProjects, setCurrentTab, saveProject, newProject, setCollaborators, setRenameProject, setDeleteProject }) {
 
@@ -19,6 +20,7 @@ export default function NavBar({ setLogin, projects, setTabs, setProjects, setCu
     const [ healthStatus, setHealthStatus ] = useState({ status: 'CHECKING', db: '...', latency: '...' })
     const [ isHealthLoading, setIsHealthLoading ] = useState(true)
     const healthCheckRef = useRef(null)
+    const axios = useAxios()
 
     useEffect(() => {
         // 1. Infrastructure Health & Monitoring - Health Check Function
@@ -26,12 +28,8 @@ export default function NavBar({ setLogin, projects, setTabs, setProjects, setCu
             setIsHealthLoading(true)
             const start = performance.now()
             try {
-                const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:10000'
-                const response = await fetch(`${baseURL}/api/health`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                })
-                const data = await response.json()
+                const response = await axios.get('/api/health')
+                const data = response.data
                 const latency = Math.round(performance.now() - start)
                 
                 setHealthStatus({
