@@ -2,16 +2,12 @@ import express, { Request, Response } from 'express'
 import cors from 'cors'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
+import apiRoutes from './routes/index'
 import dashboardManagement from './routes/dashboardManagement'
-import proxy from './routes/proxy'
-import auth from './routes/auth'
-import projects from './routes/projects'
-import echo from './routes/echo'
-import admin from './routes/admin'
-import dashboard from './routes/dashboard'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler'
 import { requestLogger } from './middleware/logging'
 import { initDB } from './database'
+
 
 
 // Swagger configuration
@@ -19,14 +15,18 @@ const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'API Testing Platform API',
+            title: 'REST API Development Ecosystem',
             version: '1.0.0',
-            description: 'REST API for API Testing Platform with JWT authentication and role-based access control'
+            description: 'API Documentation for the Ecosystem with dashboard monitoring and learning wiki'
         },
         servers: [
             {
-                url: 'http://localhost:3000',
-                description: 'Development server'
+                url: 'https://rest-api-ecosystem-backend.onrender.com',
+                description: 'Production Server'
+            },
+            {
+                url: 'http://localhost:10000',
+                description: 'Local Server'
             }
         ],
         components: {
@@ -44,7 +44,7 @@ const swaggerOptions = {
             }
         ]
     },
-    apis: ['./src/routes/*.ts']
+    apis: ['./dist/routes/*.js', './src/routes/*.ts']
 }
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
@@ -60,15 +60,9 @@ app.use(requestLogger)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // API routes
+app.use('/api', apiRoutes)
 app.use('/api/dashboard', dashboardManagement)
 
-// Protected routes
-app.use('/proxy', proxy)
-app.use('/echo', echo)
-app.use('/auth', auth)
-app.use('/projects', projects)
-app.use('/admin', admin)
-app.use('/dashboard', dashboard)
 
 
 // Health check
