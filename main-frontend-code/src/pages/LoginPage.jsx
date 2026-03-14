@@ -45,7 +45,7 @@ const LoginPage = () => {
     
     toast.success('Demo login successful!');
     
-    window.location.href = '/pro'; 
+    window.location.replace('/pro'); 
   }
 
   return (
@@ -108,16 +108,15 @@ const LoginPage = () => {
           </div>
 
           <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            <button 
+              type="button" 
+              onClick={() => {
+                localStorage.setItem('token', 'demo-token-123');
+                window.location.assign('/pro'); 
+              }}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/30"
             >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              ) : (
-                'Sign in'
-              )}
+              Launch Professional Dashboard
             </button>
           </div>
         </form>
