@@ -1,5 +1,5 @@
 import React from 'react';
-import cls from '../utils/cls';
+import { cls } from '../utils/cls';
 
 // SVG Icons (consistent with ModernDashboard - pure SVG, no lucide-react)
 const GlobeIcon = () => (
