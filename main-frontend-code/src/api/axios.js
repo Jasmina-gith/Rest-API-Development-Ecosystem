@@ -2,13 +2,16 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'
 import { getCookie, setCookie } from '../utils/utils';
 
-const baseURL = "http://localhost:3000/"
+// Use the Render URL if available, otherwise fallback to localhost
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:3000/";
 
 export function useAxios() {
     return axios.create({ baseURL })
 }
 
 export const axiosJwt = axios.create({ baseURL })
+
+// ... rest of your interceptor code remains the same
 
 axiosJwt.interceptors.request.use(async config => {
     const token = getCookie('auth')
