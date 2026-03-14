@@ -1,8 +1,7 @@
 {
 	"folders": [
 		{
-			"name": "main project-frontend-main",
-			"path": "."
+			"path": ".."
 		}
 	],
 	"settings": {}
