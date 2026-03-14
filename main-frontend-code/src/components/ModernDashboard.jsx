@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import cls from '../utils/cls';
+import { cls } from '../utils/cls';
 
 // SVG Icons (pure, no external deps)
 const ClockIcon = () => (
@@ -83,7 +83,7 @@ const BookOpenIcon = () => (
 // Axios for Render backend (health + playground)
 import axios from 'axios';
 
-const RENDER_BASE_URL = "https://rest-api-ecosystem-backend.onrender.com/api/dashboard";
+const RENDER_BASE_URL = `${import.meta.env.VITE_API_URL}/dashboard`;
 
 function createHealthAxios() {
   return axios.create({ baseURL: RENDER_BASE_URL });
