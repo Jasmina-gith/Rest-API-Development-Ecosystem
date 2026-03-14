@@ -31,5 +31,5 @@ class ClassNames {
  * const classes = cls('text-lg bg-white', 'select-none', active ? 'text-emerald-300' : 'text-red-500'); // "text-lg bg-white select-none text-red-500"
  */
 export function cls(...classNames) {
-    return new ClassNames().add(...classNames)
+    return new ClassNames().add(...classNames).toString();
 }
