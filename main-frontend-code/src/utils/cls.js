@@ -33,3 +33,5 @@ class ClassNames {
 export function cls(...classNames) {
     return new ClassNames().add(...classNames).toString();
 }
+
+export default cls;
