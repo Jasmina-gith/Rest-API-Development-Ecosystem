@@ -5,7 +5,7 @@ import Pool from '../database'
 
 const router = Router()
 
-router.get('/', authorize, async (req, res: AuthResponse) => {
+router.get('/', authorize, async (req: Request, res: Response) => {
     try {
         const userId = res.user?.userId
         const {
@@ -52,7 +52,7 @@ router.get('/', authorize, async (req, res: AuthResponse) => {
             return res.status(500).json({ error: error.message })
         }
 
-        const projects = data?.map(item => ({
+        const projects = (data as any[])?.map((item: any) => ({
             projectId: item.project_id,
             projectName: item.project_name,
             isOwner: item.Collaborators[0].is_owner,
@@ -94,7 +94,7 @@ router.post('/new', authorize, (req, res: AuthResponse) => {
         }
 
         const project = data[0]
-        Pool.from('Collaborators').insert({ project_id: data[0].project_id, user_id: res.user.userId, is_owner: true })
+        Pool.from('Collaborators').insert({ project_id: data![0].project_id, user_id: res.user!.userId, is_owner: true })
         .then(({ error }) => {
             if (error) {
                 res.status(500).json({ error: error.message })
@@ -165,7 +165,7 @@ router.get('/collaborator/:id', authorize, async (req, res: AuthResponse) => {
     const projectId = req.params.id
     Pool.from('Collaborators').select().eq('project_id', projectId)
     .then(async ({ data, error }) => {
-        const users = data?.map(item => {
+        const users = (data as any[])?.map((item: any) => {
             const { project_id, ...users } = item
             return users
         }) || []

@@ -1,0 +1,132 @@
+{
+  "hash": "9efaf9e0",
+  "configHash": "0ca3439d",
+  "lockfileHash": "e3b0c442",
+  "browserHash": "e17caff3",
+  "optimized": {
+    "@codemirror/lang-html": {
+      "src": "../../main-frontend-code/node_modules/@codemirror/lang-html/dist/index.js",
+      "file": "@codemirror_lang-html.js",
+      "fileHash": "cbb95919",
+      "needsInterop": false
+    },
+    "@codemirror/lang-json": {
+      "src": "../../main-frontend-code/node_modules/@codemirror/lang-json/dist/index.js",
+      "file": "@codemirror_lang-json.js",
+      "fileHash": "4d61d9d6",
+      "needsInterop": false
+    },
+    "@codemirror/lint": {
+      "src": "../../main-frontend-code/node_modules/@codemirror/lint/dist/index.js",
+      "file": "@codemirror_lint.js",
+      "fileHash": "6540abca",
+      "needsInterop": false
+    },
+    "@lezer/highlight": {
+      "src": "../../main-frontend-code/node_modules/@lezer/highlight/dist/index.js",
+      "file": "@lezer_highlight.js",
+      "fileHash": "e1dd3b27",
+      "needsInterop": false
+    },
+    "@supabase/supabase-js": {
+      "src": "../../main-frontend-code/node_modules/@supabase/supabase-js/dist/index.mjs",
+      "file": "@supabase_supabase-js.js",
+      "fileHash": "789fc99b",
+      "needsInterop": false
+    },
+    "@uiw/codemirror-themes": {
+      "src": "../../main-frontend-code/node_modules/@uiw/codemirror-themes/esm/index.js",
+      "file": "@uiw_codemirror-themes.js",
+      "fileHash": "905b7b8f",
+      "needsInterop": false
+    },
+    "@uiw/react-codemirror": {
+      "src": "../../main-frontend-code/node_modules/@uiw/react-codemirror/esm/index.js",
+      "file": "@uiw_react-codemirror.js",
+      "fileHash": "065ad395",
+      "needsInterop": false
+    },
+    "axios": {
+      "src": "../../main-frontend-code/node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "d8815c15",
+      "needsInterop": false
+    },
+    "jwt-decode": {
+      "src": "../../main-frontend-code/node_modules/jwt-decode/build/esm/index.js",
+      "file": "jwt-decode.js",
+      "fileHash": "26568b43",
+      "needsInterop": false
+    },
+    "react-dom/client": {
+      "src": "../../main-frontend-code/node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "9c764fd3",
+      "needsInterop": true
+    },
+    "react-hot-toast": {
+      "src": "../../main-frontend-code/node_modules/react-hot-toast/dist/index.mjs",
+      "file": "react-hot-toast.js",
+      "fileHash": "a55b236e",
+      "needsInterop": false
+    },
+    "react-router-dom": {
+      "src": "../../main-frontend-code/node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "3883b5d1",
+      "needsInterop": false
+    },
+    "react": {
+      "src": "../../main-frontend-code/node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "adacb889",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../main-frontend-code/node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "6365b2e5",
+      "needsInterop": true
+    },
+    "uuid": {
+      "src": "../../main-frontend-code/node_modules/uuid/dist/esm-browser/index.js",
+      "file": "uuid.js",
+      "fileHash": "2da5dd10",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-BoAXSpZd": {
+      "file": "chunk-BoAXSpZd.js",
+      "isDynamicEntry": false
+    },
+    "dist-6B1w95Bj": {
+      "file": "dist-6B1w95Bj.js",
+      "isDynamicEntry": false
+    },
+    "dist-C5LcgQu0": {
+      "file": "dist-C5LcgQu0.js",
+      "isDynamicEntry": false
+    },
+    "dist-CFEsG8eD": {
+      "file": "dist-CFEsG8eD.js",
+      "isDynamicEntry": false
+    },
+    "dist-DWiRyRcq": {
+      "file": "dist-DWiRyRcq.js",
+      "isDynamicEntry": false
+    },
+    "dist-Jo2mh-hO": {
+      "file": "dist-Jo2mh-hO.js",
+      "isDynamicEntry": false
+    },
+    "dist-STzBzKwr": {
+      "file": "dist-STzBzKwr.js",
+      "isDynamicEntry": false
+    },
+    "react-dom-KvssItDR": {
+      "file": "react-dom-KvssItDR.js",
+      "isDynamicEntry": false
+    }
+  }
+}

@@ -36,33 +36,16 @@ const LoginPage = () => {
     return newErrors
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    const validationErrors = validateForm()
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const response = await axiosJwt.post('/auth/login', formData)
-      if (response.data.token) {
-        // Store token in cookie (assuming backend sets it)
-        document.cookie = `auth=${response.data.token}; path=/`
-        if (response.data.refreshToken) {
-          document.cookie = `ref=${response.data.refreshToken}; path=/`
-        }
-        await authorize()
-        toast.success('Login successful!')
-        navigate('/dashboard')
-      }
-    } catch (error) {
-      console.error('Login error:', error)
-      toast.error(error.response?.data?.message || 'Login failed')
-    } finally {
-      setIsLoading(false)
-    }
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault();
+    
+    console.log("Seminar Mode: Forcing Redirect...");
+    
+    localStorage.setItem('token', 'demo-token-123');
+    
+    toast.success('Demo login successful!');
+    
+    window.location.href = '/pro'; 
   }
 
   return (
