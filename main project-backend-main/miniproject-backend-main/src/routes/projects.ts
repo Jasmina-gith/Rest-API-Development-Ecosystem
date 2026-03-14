@@ -1,0 +1,357 @@
+import { Router } from "express"
+import { authorize } from "../utils"
+import { AuthResponse } from "../types"
+import Pool from '../database'
+
+const router = Router()
+
+router.get('/', authorize, async (req, res: AuthResponse) => {
+    try {
+        const userId = res.user?.userId
+        const {
+            page = 1,
+            limit = 10,
+            search = '',
+            sortBy = 'updated_at',
+            sortOrder = 'desc',
+            state
+        } = req.query
+
+        const pageNum = parseInt(page as string, 10)
+        const limitNum = parseInt(limit as string, 10)
+        const offset = (pageNum - 1) * limitNum
+
+        let query = Pool
+            .from('Projects')
+            .select('project_id, project_name, state, created_at, updated_at, Collaborators!inner(project_id, user_id, is_owner)', { count: 'exact' })
+            .eq('Collaborators.user_id', userId)
+
+        // Apply search filter
+        if (search) {
+            query = query.ilike('project_name', `%${search}%`)
+        }
+
+        // Apply state filter
+        if (state) {
+            query = query.eq('state', state)
+        }
+
+        // Apply sorting
+        const validSortFields = ['project_name', 'state', 'created_at', 'updated_at']
+        const sortField = validSortFields.includes(sortBy as string) ? sortBy : 'updated_at'
+        const order = sortOrder === 'asc' ? { ascending: true } : { ascending: false }
+
+        query = query.order(sortField as string, order)
+
+        // Apply pagination
+        query = query.range(offset, offset + limitNum - 1)
+
+        const { data, error, count } = await query
+
+        if (error) {
+            return res.status(500).json({ error: error.message })
+        }
+
+        const projects = data?.map(item => ({
+            projectId: item.project_id,
+            projectName: item.project_name,
+            isOwner: item.Collaborators[0].is_owner,
+            state: item.state,
+            createdAt: item.created_at,
+            updatedAt: item.updated_at
+        })) || []
+
+        res.json({
+            success: true,
+            data: projects,
+            pagination: {
+                page: pageNum,
+                limit: limitNum,
+                total: count || 0,
+                pages: Math.ceil((count || 0) / limitNum)
+            }
+        })
+
+    } catch (error) {
+        console.error('Get projects error:', error)
+        res.status(500).json({ error: 'Internal server error' })
+    }
+})
+
+router.post('/new', authorize, (req, res: AuthResponse) => {
+    const name = req.body.projectName
+
+    if (!name) {
+        res.status(400).json("Missing field: \"projectName\"")
+        return;
+    }
+
+    Pool.from('Projects').insert({ project_name: name }).select()
+    .then(async ({ data, error }) => {
+        if (error) {
+            res.status(500).json({ error: error.message })
+            return;
+        }
+
+        const project = data[0]
+        Pool.from('Collaborators').insert({ project_id: data[0].project_id, user_id: res.user.userId, is_owner: true })
+        .then(({ error }) => {
+            if (error) {
+                res.status(500).json({ error: error.message })
+                return;
+            }
+
+            const { project_id, project_name, state } = project
+            res.status(201).json({ projectId: project_id, projectName: project_name, state })
+        })
+    })
+})
+
+router.patch('/state', authorize, (req, res: AuthResponse) => {
+    const state = req.body.state
+    const projectId = req.body.projectId
+
+    if (!projectId) {
+        res.status(400).json("Missing field: \"projectId\"")
+        return;
+    }
+
+    if (!state) {
+        res.status(400).json("Missing field: \"state\"")
+        return;
+    }
+
+    projectCollaboratorAction(res, projectId, () => {
+        Pool.from('Projects').update({ state }).eq('project_id', projectId).select()
+        .then(async ({ error }) => {
+            if (error) {
+                res.status(500).json({ error: error.message })
+                return;
+            }
+    
+            res.status(201).json({ message: "Updated state succesfully" })
+        })
+    })
+})
+
+router.patch('/rename', authorize, (req, res: AuthResponse) => {
+    const projectId = req.body.projectId
+    const projectName = req.body.projectName
+
+    if (!projectId) {
+        res.status(400).json("Missing field: \"projectId\"")
+        return;
+    }
+
+    if (!projectName) {
+        res.status(400).json("Missing field: \"projectName\"")
+        return;
+    }
+
+    projectCollaboratorAction(res, projectId, () => {
+        Pool.from('Projects').update({ project_name: projectName }).eq('project_id', projectId)
+        .then(async ({ error }) => {
+            if (error) {
+                res.status(500).json({ error: error.message })
+                return;
+            }
+    
+            res.status(201).json({ message: "Renamed project succesfully" })
+        })
+    })
+})
+
+router.get('/collaborator/:id', authorize, async (req, res: AuthResponse) => {
+    const projectId = req.params.id
+    Pool.from('Collaborators').select().eq('project_id', projectId)
+    .then(async ({ data, error }) => {
+        const users = data?.map(item => {
+            const { project_id, ...users } = item
+            return users
+        }) || []
+
+        let found = false
+        for (let user of users) {
+            if (user.user_id == res.user.userId) {
+                found = true
+                break;
+            }
+        }
+
+        if (!found) {
+            res.status(401).json({ error: "Unnauthorized action" })
+            return;
+        }
+
+        const result = await Promise.all(users.map(async (user) => {
+            return await Pool.from('Users').select('username').eq('user_id', user.user_id)
+            .then(({ data, error}) => {
+                if (error) {
+                    res.status(500).json({ error: error.message })
+                    return;
+                }
+
+                const newUser = { ...user, username: data[0].username }
+                return newUser
+            })
+        }))
+
+        res.status(200).json(result)
+    })
+})
+
+router.post('/collaborator', authorize, async (req, res: AuthResponse) => {
+    const projectId = req.body.projectId
+    const username = req.body.username
+    
+    if (!projectId) {
+        res.status(400).json("Missing field: \"projectId\"")
+        return;
+    }
+    
+    if (!username) {
+        res.status(400).json("Missing field: \"username\"")
+        return;
+    }
+
+    let user: any;
+    await Pool.from('Users').select().eq('username', username)
+    .then(({ data, error}) => {
+        if (error) {
+            res.status(500).json({ error: error.message })
+            return;
+        }
+
+        user = data[0]
+    })
+
+    if (!user) {
+        res.status(400).json({ error: "User does not exist" })
+        return;
+    }
+
+    const userId = user.user_id
+    projectOwnerAction(res, projectId, () => {
+        Pool.from('Collaborators').insert({ user_id: userId, project_id: projectId }).select()
+        .then(({ error }) => {
+            if (error) {
+                res.status(500).json({ error: error.message })
+                return;
+            }
+                
+            res.status(201).json({ message: "Added collaborator succesfully!" })
+        })}
+    )
+
+})
+
+router.post('/collaborator/remove', authorize, async (req, res: AuthResponse) => {
+    const projectId = req.body.projectId
+    const username = req.body.username
+    
+    if (!projectId) {
+        res.status(400).json("Missing field: \"projectId\"")
+        return;
+    }
+    
+    if (!username) {
+        res.status(400).json("Missing field: \"username\"")
+        return;
+    }
+
+    let user: any;
+    await Pool.from('Users').select().eq('username', username)
+    .then(({ data, error}) => {
+        if (error) {
+            console.log(error)
+            return;
+        }
+
+        user = data[0]
+    })
+
+    if (!user) {
+        res.status(400).json({ error: "User does not exist" })
+        return;
+    }
+
+    const userId = user.user_id
+    projectOwnerAction(res, projectId, () => {
+        Pool.from('Collaborators').delete().eq('project_id', projectId).eq('user_id', userId).select()
+        .then(({ error }) => {
+            if (error) {
+                res.status(500).json({ error: error.message })
+                return;
+            }
+
+            res.status(201).json({ message: "Removed collaborator succesfully!" })
+        })}
+    )
+    
+})
+
+router.delete('/remove/:id', authorize, (req, res: AuthResponse) => {
+    const id = req.params.id
+
+    if (!id) {
+        res.status(400).json("Missing parameter: project_id")
+        return;
+    }
+
+    projectOwnerAction(res, id, () =>
+        Pool.from('Projects').delete().eq('project_id', id).select()
+        .then(async ({ data, error }) => {
+            if (error) {
+                res.status(500).json({ error: error.message })
+                return;
+            }
+    
+            res.status(201).json({ message: "Deleted project succesfully!", project_details: data })
+        })
+    )
+
+})
+
+function projectOwnerAction(res: AuthResponse, projectId: string, action: Function) {
+    Pool.from('Collaborators').select('user_id').eq('project_id', projectId).eq('is_owner', true)
+    .then(async ({ data: users, error }) => {
+        checkProjectAuth(res, users, error, action)
+    })
+}
+
+function projectCollaboratorAction(res: AuthResponse, projectId: string, action: Function) {
+    Pool.from('Collaborators').select('user_id').eq('project_id', projectId)
+    .then(async ({ data: users, error }) => {
+        checkProjectAuth(res, users, error, action)
+    })
+}
+
+async function checkProjectAuth(res: AuthResponse, users: any, error: any, action: Function) {
+    if (error) {
+        res.status(500).json({ error: error.message })
+        return;
+    }
+
+    if (!users.length) {
+        res.status(404).json({ error: "Couldn't find project" })
+        return;
+    }
+
+    let found = false
+    for (let user of users) {
+        if (user.user_id == res.user.userId) {
+            found = true
+            break;
+        }
+    }
+
+    if (!found) {
+        res.status(403).json({ error: "Unauthorized action" })
+        return;
+    }
+
+
+    action()
+} 
+
+export default router

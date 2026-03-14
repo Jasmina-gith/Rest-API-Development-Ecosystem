@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    @apply dark:bg-lightblack duration-200 text-lightblack dark:text-white selection:bg-zinc-400 dark:selection:bg-zinc-700
+}
+
+::-webkit-scrollbar {
+    @apply w-2 h-[0.3rem] bg-transparent
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-zinc-800 dark:bg-opacity-70 bg-opacity-30 rounded
+}
+
+::-webkit-scrollbar-corner{
+    @apply bg-transparent
+}
+
+body {
+    @apply font-inter [font-feature-settings:'cv11']
+}
+
+button {
+    @apply select-none
+}
