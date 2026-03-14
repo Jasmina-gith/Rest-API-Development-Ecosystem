@@ -1,16 +1,46 @@
 import React, { useState } from 'react'
+import { supabase } from '../supabaseClient'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-// save production token and hard-redirect to /pro
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    localStorage.setItem('token', 'true')
-    window.location.href = '/pro'
+  // 1. Security Gate
+  if (password === "123") {
+    alert("❌ SECURITY ALERT: Password '123' is prohibited.");
+    return;
   }
+
+  try {
+    // 2. Attempt Silent Sign In
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    // 3. Fallback: If user doesn't exist, create them silently
+    if (signInError && signInError.message.toLowerCase().includes("invalid login")) {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      if (signUpError) throw signUpError;
+    } else if (signInError) {
+      throw signInError;
+    }
+
+    // 4. Success: Store handle and redirect
+    const nameHandle = email.split('@')[0];
+    localStorage.setItem('displayName', nameHandle);
+    window.location.href = "/pro";
+
+  } catch (err) {
+    alert("Authentication Error: " + err.message);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#020617] p-6">
@@ -48,11 +78,11 @@ export default function LoginPage() {
               type="submit"
               className="w-full py-3 mt-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-black font-semibold shadow-lg"
             >
-              Continue to Professional Dashboard
+              Authorize System Access
             </button>
           </form>
         </div>
-By continuing you accept the production terms of service.
+        <p className="mt-4 text-center text-xs text-cyan-300/60">By continuing you accept the production terms of service.</p>
       </div>
     </div>
   )

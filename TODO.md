@@ -1,10 +1,14 @@
-# TODO: REPAIR 404 WIKI AND NAVIGATION FIXES
+# Supabase Auth Integration TODO
 
-## Steps:
-- [x] Step 1: Edit App.jsx (wrap BrowserRouter, add /learn route, fix / to LoginPage)
-- [x] Step 2: Edit NotFound.jsx (replace Link with hard-redirect button "Return to Secure Gateway")
-- [x] Step 3: Edit APIWiki.jsx (add "Return to Dashboard" header button, ensure #020617 Dark Slate theme with border-slate-800)
-- [x] Step 4: Test navigation: Run `cd main-frontend-code && npm run dev`, check /, /learn, /pro, invalid path -> 404 button
-- [x] Step 5: Optional cleanup: Scan/replace stray Link components outside Router (no stray Links found in core files)
+## Steps
+1. [x] Plan confirmed
+2. [x] Edit LoginPage.jsx (import + handleSubmit)
+3. [x] Provide trigger SQL
+4. [ ] Test: Login with ga@example.com → check Supabase auth.users and public.Users tables
 
-Progress will be updated after each step.
+**Instructions:**
+- Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env
+- Run trigger SQL in Supabase SQL Editor
+- Enable Email auth, disable confirmations for demo
+
+**Status:** LoginPage.jsx updated with Supabase auth. Dev server running at http://localhost:5185/. Test login (avoid password \"123\"), verify buttons/lights in dashboard (pulsing dot, API playground Run button, collapse sidebar), signals (health status, service statuses). Users now sync to Supabase tables.

@@ -55,7 +55,7 @@ const APIWiki = () => {
   ];
 
   return (
-    <div className={cls("min-h-screen bg-[#020617] p-8")}>
+    <div className={cls("min-h-screen bg-[#020617] p-8 backdrop-blur-xl")}>
       {/* Background pattern */}
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.1),transparent)]" />
@@ -83,12 +83,12 @@ const APIWiki = () => {
         <div className="grid md:grid-cols-2 gap-8">
           {topics.map((topic, i) => (
             <div key={i} className={cls(
-"group relative overflow-hidden rounded-2xl border border-slate-800 bg-white/70 backdrop-blur-md p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-300 dark:border-slate-800 dark:bg-slate-800/60",
+              "group relative overflow-hidden rounded-2xl border border-slate-800 bg-white/70 backdrop-blur-xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-300 dark:border-slate-800 dark:bg-slate-800/60",
               "hover:bg-white/90 dark:hover:bg-slate-800/80"
             )}>
               <div className="flex items-start gap-6 mb-6">
                 <div className="flex-shrink-0 p-4 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl group-hover:scale-110 transition-transform duration-300 border border-blue-200/50 dark:border-blue-800/50">
-                  {topic.icon}
+                  {topic.icon()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{topic.title}</h2>
@@ -109,7 +109,9 @@ const APIWiki = () => {
         </div>
 
         <div className="mt-20 text-center">
-          <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-2xl font-semibold text-lg shadow-2xl hover:shadow-emerald-500/50 hover:from-emerald-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-1">
+          <div 
+            onClick={() => window.location.href = '/test'}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-2xl font-semibold text-lg shadow-2xl hover:shadow-emerald-500/50 hover:from-emerald-600 hover:to-blue-700 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -118,14 +120,8 @@ const APIWiki = () => {
         </div>
       </div>
     </div>
-
-  </div>
   );
 };
-
-export default APIWiki;
-
-
 
 export default APIWiki;
 
