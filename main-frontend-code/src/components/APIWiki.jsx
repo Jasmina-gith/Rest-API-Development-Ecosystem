@@ -55,7 +55,7 @@ const APIWiki = () => {
   ];
 
   return (
-    <div className={cls("min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-8")}>
+    <div className={cls("min-h-screen bg-[#020617] p-8")}>
       {/* Background pattern */}
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.1),transparent)]" />
@@ -71,10 +71,19 @@ const APIWiki = () => {
           </p>
         </div>
         
+        <div className="flex justify-center mb-12">
+          <button 
+            onClick={() => window.location.href = '/pro'}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex-shrink-0"
+          >
+            ← Return to Dashboard
+          </button>
+        </div>
+        
         <div className="grid md:grid-cols-2 gap-8">
           {topics.map((topic, i) => (
             <div key={i} className={cls(
-              "group relative overflow-hidden rounded-2xl border border-slate-200/50 bg-white/70 backdrop-blur-md p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-300 dark:border-slate-800/50 dark:bg-slate-800/60",
+"group relative overflow-hidden rounded-2xl border border-slate-800 bg-white/70 backdrop-blur-md p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-300 dark:border-slate-800 dark:bg-slate-800/60",
               "hover:bg-white/90 dark:hover:bg-slate-800/80"
             )}>
               <div className="flex items-start gap-6 mb-6">
@@ -109,8 +118,14 @@ const APIWiki = () => {
         </div>
       </div>
     </div>
+
+  </div>
   );
 };
+
+export default APIWiki;
+
+
 
 export default APIWiki;
 

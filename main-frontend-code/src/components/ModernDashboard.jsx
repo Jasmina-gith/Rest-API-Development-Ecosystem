@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { cls } from '../utils/cls';
+import { Activity, Database, Zap, Clock, User as UserIcon, Terminal, BookOpen } from 'lucide-react'
+
 
 // SVG Icons (pure, no external deps)
 const ClockIcon = () => (
@@ -178,30 +180,32 @@ export default function ModernDashboard() {
     { id: "health", label: "System Health", icon: ActivityIcon },
     { id: "playground", label: "API Playground", icon: PlayIcon },
     { id: "services", label: "Services", icon: DatabaseIcon },
-    { id: "logs", label: "Logs", icon: ActivityIcon },
+{ id: "logs", label: "System Logs", icon: Terminal, href: "/logs" },
+
     { id: "wiki", label: "Learning Wiki", icon: BookOpenIcon, href: "/learn" }
   ];
 
   return (
-    <div className={cls("min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 transition-all duration-300")}>
+    <div className={cls("min-h-screen bg-[#020617] text-white transition-all duration-300")}>
       {/* Background */}
       <div className="fixed inset-0 -z-10 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,200,140,0.1),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(100,150,200,0.05),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_20%_10%,rgba(6,182,212,0.06),transparent)]" />
       </div>
 
       {/* Sidebar */}
       <aside className={cls(
-        "fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/80 transition-all duration-300 md:block",
-        sidebarCollapsed && "w-16"
+        "fixed left-0 top-0 z-40 flex h-screen w-72 flex-col border-r border-transparent bg-[#070a12]/80 backdrop-blur-md transition-all duration-300 md:block",
+        sidebarCollapsed && "w-20"
       )}>
         <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-4 dark:border-slate-800">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500 text-[#021224]">
             <ZapIcon />
           </div>
           {!sidebarCollapsed && (
             <div className="flex flex-col">
-              <span className="text-sm font-semibold">REST API</span>
-              <span className="text-xs text-slate-500">Ecosystem</span>
+              <span className="text-sm font-semibold">Professional Dashboard</span>
+                <span className="text-xs text-cyan-300/60">Production v1.0</span>
+
             </div>
           )}
         </div>
@@ -218,44 +222,92 @@ export default function ModernDashboard() {
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
               )}
             >
-              <item.icon />
+              <item.icon className="text-cyan-300" />
               {!sidebarCollapsed && <span>{item.label}</span>}
             </button>
           ))}
         </nav>
 
-        <button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="m-3 flex items-center justify-center rounded-lg py-2 text-slate-500 transition-all hover:bg-slate-100 dark:hover:bg-slate-800"
-        >
-          {sidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
-        </button>
+        <div className="px-3 py-4">
+          <div className="mt-4 border-t border-slate-800 pt-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-cyan-600 flex items-center justify-center text-[#021224]">
+                <UserIcon />
+              </div>
+              <div>
+                <div className="text-sm font-semibold">Jasmina Joshy T</div>
+                <div className="text-xs text-cyan-300/60">Product</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="mt-3 w-full rounded-md py-2 text-sm bg-[#0f172a] border border-cyan-700/20 text-cyan-200"
+            >
+              {sidebarCollapsed ? 'Expand' : 'Collapse'}
+            </button>
+          </div>
+        </div>
       </aside>
 
       {/* Main */}
       <main className={cls(
-        "min-h-screen pt-16 transition-all md:ml-64",
-        sidebarCollapsed && "md:ml-16"
+        "min-h-screen pt-16 transition-all md:ml-72",
+        sidebarCollapsed && "md:ml-20"
       )}>
-        <div className="p-4 md:p-6 pb-24 md:pb-6">
-          <h1 className="mb-6 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {activeSection === 'health' ? 'System Health' : activeSection === 'playground' ? 'API Playground' : 'Services'}
-          </h1>
-          <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
-            Monitor your API infrastructure and services in real-time
-          </p>
+        <div className="p-6 md:p-8 pb-24 md:pb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="mb-1 text-2xl font-semibold">{activeSection === 'health' ? 'System Health' : activeSection === 'playground' ? 'API Playground' : 'Services'}</h1>
+              <p className="text-sm text-cyan-300/60">Monitor your API infrastructure and services</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-sm font-medium">Jasmina Joshy T</div>
+                <div className="text-xs text-cyan-300/60">Production Environment</div>
+
+              </div>
+            </div>
+          </div>
 
           {/* Stats */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-            {stats.map((stat, i) => (
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-3 my-8">
+            {stats.slice(0,3).map((stat, i) => (
               <StatCard key={i} {...stat} />
             ))}
           </div>
 
-          {/* Content */}
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
               {activeSection === 'playground' && <ApiPlayground playground={playground} setPlayground={setPlayground} onRun={handleRun} />}
+              {/* Activity table placeholder */}
+              <div className="rounded-xl border border-transparent bg-[#0f172a] p-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Recent Activity</h3>
+                </div>
+                <div className="mt-3 text-xs text-cyan-200/80">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-cyan-300/60">
+                        <th className="py-2">Time</th>
+                        <th className="py-2">Event</th>
+                        <th className="py-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t border-[#021224]">
+                        <td className="py-2">12:04</td>
+                        <td className="py-2">GET /api/health</td>
+                        <td className="py-2 text-cyan-300">200 OK</td>
+                      </tr>
+                      <tr className="border-t border-[#021224]">
+                        <td className="py-2">11:59</td>
+                        <td className="py-2">POST /api/run</td>
+                        <td className="py-2 text-amber-400">202</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
             <div className="space-y-6">
               <SystemHealth services={services} />
@@ -270,32 +322,28 @@ export default function ModernDashboard() {
 function StatCard({ icon: Icon, label, value, subValue, status, trend }) {
   return (
     <div className={cls(
-      "group relative overflow-hidden rounded-xl border p-5 backdrop-blur-sm transition-all duration-300 hover:shadow-lg",
-      "border-slate-200 bg-white/50 dark:border-slate-800 dark:bg-slate-800/50 hover:border-blue-300 hover:bg-white/80 dark:hover:border-blue-500 dark:hover:bg-slate-800/80"
+      "group relative overflow-hidden rounded-xl border p-5 transition-all duration-300",
+      "border-transparent bg-[#0f172a] hover:shadow-[0_8px_30px_rgba(6,182,212,0.06)]"
     )}>
       <div className="relative z-10">
         <div className="flex items-center justify-between">
           <div className={cls(
-            "flex h-10 w-10 items-center justify-center rounded-lg",
-            status === "success" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" :
-            status === "error" ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" :
-            "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+            "flex h-10 w-10 items-center justify-center rounded-lg bg-[#071226] text-cyan-300"
           )}>
             <Icon />
           </div>
           {trend && (
             <div className={cls(
-              "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-              trend.direction === "up" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30" : "bg-red-100 text-red-700 dark:bg-red-900/30"
+              "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-cyan-300"
             )}>
               {trend.direction === "up" ? <TrendingUp /> : <TrendingDown />}
               {trend.value}
             </div>
           )}
         </div>
-        <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-400">{label}</p>
-        <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{value}</p>
-        {subValue && <p className="mt-1 text-xs text-slate-500 dark:text-slate-500">{subValue}</p>}
+        <p className="mt-3 text-sm font-medium text-cyan-200">{label}</p>
+        <p className="mt-1 text-2xl font-semibold text-white">{value}</p>
+        {subValue && <p className="mt-1 text-xs text-cyan-300/70">{subValue}</p>}
       </div>
     </div>
   );
