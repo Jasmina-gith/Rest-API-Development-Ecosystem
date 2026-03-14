@@ -19,12 +19,14 @@
     "@uiw/codemirror-themes": "^4.23.7",
     "@uiw/react-codemirror": "^4.23.7",
     "axios": "^1.8.4",
+    "clsx": "^2.1.1",
     "jsdom": "^26.0.0",
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.12.0",
+    "tailwind-merge": "^3.5.0",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
