@@ -9,6 +9,7 @@ import APIWiki from './components/APIWiki';
 import SystemLogs from './pages/SystemLogs';
 import ApiTester from "./components/ApiTester";
 import UserProfile from './pages/UserProfile';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (

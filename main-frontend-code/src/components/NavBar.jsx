@@ -1,7 +1,6 @@
-import { useContext, useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom";
-import { ThemeContext } from "../context/ThemeContext"
-import ThemeSelector from "./ThemeSelector"
+import { useContext, useEffect, useState, useNavigate } from "react"
+ import { ThemeContext } from "../context/ThemeContext"
+ import ThemeSelector from "./ThemeSelector"
 import Popup from "./Popup"
 import AuthContext from "../context/AuthContext"
 import Projects from "./Projects"
