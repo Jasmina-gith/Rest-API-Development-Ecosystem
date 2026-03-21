@@ -82,7 +82,7 @@ const UserProfile = () => {
         },
       });
       if (error) throw error;
-      import { logAction } from '../utils/activity';
+      const { logAction } = await import('../utils/activity');
       await logAction('Profile Update', `User changed their display name to "${fullName.trim()}"`);
       setEditingName(false);
     } catch (error) {

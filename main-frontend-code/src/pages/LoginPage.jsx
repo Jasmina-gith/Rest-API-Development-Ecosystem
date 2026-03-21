@@ -105,7 +105,7 @@ export default function LoginPage() {
       });
       if (error) throw error;
       localStorage.setItem('displayName', email.split('@')[0]);
-      import { logAction } from '../utils/activity';
+      const { logAction } = await import('../utils/activity');
       await logAction('Login', `User ${email} logged in successfully`);
       window.location.href = '/dashboard';
     } catch (error) {
