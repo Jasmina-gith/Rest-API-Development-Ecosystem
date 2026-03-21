@@ -29,40 +29,39 @@ export default function LoginPage() {
   const [typeSpeed, setTypeSpeed] = useState(150);
 
   // Typewriter effect
-  useEffect(() => {
+  const handleTypewriter = () => {
     let timeoutId;
-
-    const handleTypewriter = () => {
+    const interval = setInterval(() => {
       if (isDeleting) {
         const newText = displayedText.slice(0, -1);
         setDisplayedText(newText);
-
         if (newText === '') {
+          clearInterval(interval);
           setIsDeleting(false);
           setCurrentWordIndex((prev) => (prev + 1) % words.length);
-          setTimeout(() => setTypeSpeed(wordDelays[currentWordIndex]), 500);
-        } else {
-          timeoutId = setTimeout(handleTypewriter, 50);
+          setTimeout(() => handleTypewriter(), 500);
         }
       } else {
         const nextWord = words[currentWordIndex];
         if (displayedText === nextWord) {
           setTimeout(() => {
             setIsDeleting(true);
-            setTypeSpeed(50);
+            handleTypewriter();
           }, 2000);
         } else {
           const newText = nextWord.slice(0, displayedText.length + 1);
           setDisplayedText(newText);
-          timeoutId = setTimeout(handleTypewriter, typeSpeed);
         }
       }
-    };
+    }, typeSpeed);
 
+    return () => clearInterval(interval);
+  };
+
+  useEffect(() => {
     handleTypewriter();
+  }, [currentWordIndex]);
 
-    return () => clearTimeout(timeoutId);
-  }, [displayedText, isDeleting, currentWordIndex, typeSpeed]);
 
   const checkEmailExists = async (email) => {
     const { data } = await supabase
@@ -127,13 +126,14 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
         email,
         password,
       });
       if (error) throw error;
-      setError('Check your email for confirmation link before logging in!');
+      window.location.href = '/dashboard';
       localStorage.setItem('displayName', email.split('@')[0]);
+
     } catch (error) {
       setError(error.message);
     } finally {
