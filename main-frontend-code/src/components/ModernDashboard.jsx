@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContext';
+
 import { cls } from '../utils/cls';
 import { motion } from 'framer-motion';
 import { Activity, Database, Zap, Clock, User as UserIcon, Terminal, BookOpen } from 'lucide-react';

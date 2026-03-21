@@ -1,23 +1,30 @@
-import { useContext } from 'react'
-import { Navigate } from 'react-router-dom'
-import AuthContext from '../context/AuthContext'
+import { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 const ProtectedRoute = ({ children }) => {
-  const { user, isLoading } = useContext(AuthContext)
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
+  const location = useLocation();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 dark:border-white"></div>
-      </div>
-    )
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+    </div>;
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />
+  if (!session) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  return children
-}
+  return children;
+};
 
-export default ProtectedRoute
+export default ProtectedRoute;

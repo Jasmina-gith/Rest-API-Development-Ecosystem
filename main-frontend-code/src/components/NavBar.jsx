@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../context/ThemeContext"
 import ThemeSelector from "./ThemeSelector"
 import Popup from "./Popup"
@@ -75,10 +76,13 @@ export default function NavBar({ setLogin, projects, setTabs, setProjects, setCu
             <div className="flex gap-6 items-center select-none">
                 {user && <div className="text-lg">Hello, {user.username}</div>}
                 {!isLoading && !user && <button onClick={()=>setLogin(true)} className="font-semibold px-3 py-4 flex items-center text-lg hover:text-zinc-400 duration-150">Login</button>}
-                {!isLoading && user && <div className="flex flex-col items-center">
-                    <div onClick={()=>setShowProfile(!showProfile)} className="dark:hover:text-white hover: dark:hover:border-white duration-150 rounded-full border-2 dark:border-zinc-400 border-gray-800 text-xl h-9 w-9 flex items-center justify-center cursor-pointer">{user?.username[0].toUpperCase()}</div>
-                    {showProfile && <div className="mt-12 px-3 dark:border-zinc-700 border-zinc-400 shadow-md border-[1px] rounded-lg py-3 w-fit dark:bg-lightblack bg-slate-200 z-50 absolute">
-                       <button onClick={logoutUser} className="hover:text-rose-400 duration-150 flex items-center gap-2"><span className="material-symbols-outlined">logout</span><p>Logout</p></button> 
+                {!isLoading && user && <div className="flex flex-col items-center relative">
+                    <div className="dark:hover:text-white hover: dark:hover:border-white duration-150 rounded-full border-2 dark:border-zinc-400 border-gray-800 text-xl h-9 w-9 flex items-center justify-center cursor-pointer" onClick={()=>setShowProfile(!showProfile)}>
+                      {user?.username[0].toUpperCase()}
+                    </div>
+                    {showProfile && <div className="mt-2 px-3 dark:border-zinc-700 border-zinc-400 shadow-md border-[1px] rounded-lg py-3 w-fit dark:bg-lightblack bg-slate-200 z-50 absolute right-0 top-full min-w-[150px]">
+                       <button onClick={() => {navigate('/profile'); setShowProfile(false);}} className="hover:text-blue-400 duration-150 w-full flex items-center gap-2 p-2 rounded hover:bg-white/10"><span className="material-symbols-outlined">account_circle</span><p>Profile</p></button>
+                       <button onClick={logoutUser} className="hover:text-rose-400 duration-150 w-full flex items-center gap-2 p-2 rounded hover:bg-white/10"><span className="material-symbols-outlined">logout</span><p>Logout</p></button> 
                     </div>}
                 </div>}
                 <Popup title={<span id="theme" className="material-symbols-outlined dark:text-zinc-400 text-zinc-700 hover:text-black text-2xl dark:hover:text-zinc-200">{ theme=='dark' ? 'dark_mode' : 'light_mode'}</span>}>

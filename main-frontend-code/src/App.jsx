@@ -8,6 +8,7 @@ import NotFound from './pages/NotFound';
 import APIWiki from './components/APIWiki';
 import SystemLogs from './pages/SystemLogs';
 import ApiTester from "./components/ApiTester";
+import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
@@ -19,6 +20,11 @@ function App() {
       <Route path="/learn" element={<APIWiki />} />
       <Route path="/logs" element={<SystemLogs />} />
       <Route path="/test" element={<ApiTester />} />
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <UserProfile />
+        </ProtectedRoute>
+      } />
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
