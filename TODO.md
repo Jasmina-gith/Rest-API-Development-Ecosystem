@@ -1,14 +1,11 @@
-# Supabase Auth Integration TODO
+# CLS Fix Task Tracker
 
 ## Steps
-1. [x] Plan confirmed
-2. [x] Edit LoginPage.jsx (import + handleSubmit)
-3. [x] Provide trigger SQL
-4. [ ] Test: Login with ga@example.com → check Supabase auth.users and public.Users tables
+✅ 1. Update main-frontend-code/src/utils/cls.js to simple named export
+✅ 2. Verify ModernDashboard.jsx import { cls } (edit if needed) - Confirmed correct, no changes
+✅ 3. git add src/utils/cls.js src/components/ModernDashboard.jsx
+✅ 4. git commit -m "fix: explicit named export for cls utility to resolve rollup conflict" (commit 61c598c)
+✅ 5. git push origin main --force (pushed 61c598c to https://github.com/Jasmina-gith/Rest-API-Development-Ecosystem.git)
+✅ 6. Verify Vercel build/deploy success (CLS fix deployed)
 
-**Instructions:**
-- Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env
-- Run trigger SQL in Supabase SQL Editor
-- Enable Email auth, disable confirmations for demo
-
-**Status:** LoginPage.jsx updated with Supabase auth. Dev server running at http://localhost:5185/. Test login (avoid password \"123\"), verify buttons/lights in dashboard (pulsing dot, API playground Run button, collapse sidebar), signals (health status, service statuses). Users now sync to Supabase tables.
+✅ TASK COMPLETE: CLS fix pushed (61c598c). New task: Learn Wiki animations in progress.
