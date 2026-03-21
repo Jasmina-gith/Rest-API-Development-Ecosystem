@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import AuthContext from '../context/AuthContext';
 import { cls } from '../utils/cls';
 import { motion } from 'framer-motion';
 import { Activity, Database, Zap, Clock, User as UserIcon, Terminal, BookOpen } from 'lucide-react';
@@ -93,6 +94,8 @@ function createHealthAxios() {
 }
 
 export default function ModernDashboard() {
+  const authContext = useContext(AuthContext);
+  const { user, logout } = authContext || {};
   const [activeSection, setActiveSection] = useState("health");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [healthStatus, setHealthStatus] = useState("Checking...");
