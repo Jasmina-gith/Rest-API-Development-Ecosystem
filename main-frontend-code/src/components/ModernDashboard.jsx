@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import AuthContext from '../context/AuthContext';
+import { AuthContext } from '../context/AuthContext';
 import { cls } from '../utils/cls';
 import { motion } from 'framer-motion';
 import { Activity, Database, Zap, Clock, User as UserIcon, Terminal, BookOpen } from 'lucide-react';
@@ -100,13 +100,16 @@ export default function ModernDashboard() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [healthStatus, setHealthStatus] = useState("Checking...");
   const [services, setServices] = useState([]);
-  const [playground, setPlayground] = useState({
+const [playground, setPlayground] = useState({
     method: "GET",
     url: "/api/health",
     body: "",
     response: null,
     loading: false
   });
+  const [selectedLang, setSelectedLang] = useState('JSON');
+  const [useProxy, setUseProxy] = useState(false);
+
 
   const axiosHealth = createHealthAxios();
 
@@ -185,8 +188,9 @@ export default function ModernDashboard() {
     { id: "playground", label: "API Playground", icon: PlayIcon },
     { id: "services", label: "Services", icon: DatabaseIcon },
 { id: "logs", label: "System Logs", icon: Terminal, href: "/logs" },
-
+{ id: "profile", label: "Profile", icon: UserIcon },
 { id: "wiki", label: "Learning Wiki", icon: BookOpenIcon }
+
   ];
 
   return (
@@ -235,9 +239,10 @@ export default function ModernDashboard() {
         <div className="px-3 py-4">
           <div className="mt-4 border-t border-slate-800 pt-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-cyan-600 flex items-center justify-center text-[#021224]">
+<div className="h-10 w-10 rounded-full bg-cyan-600 flex items-center justify-center text-[#021224] cursor-pointer hover:scale-105 transition-transform" onClick={() => setActiveSection('profile')}>
                 <UserIcon />
               </div>
+
               <div>
                 <div className="text-sm font-semibold">{localStorage.getItem('displayName') || 'System Admin'}</div>
                 <div className="text-xs text-cyan-300/60">Product</div>
@@ -319,10 +324,16 @@ export default function ModernDashboard() {
                   </table>
                 </div>
               </div>
-              {activeSection === 'wiki' && (
+{activeSection === 'wiki' && (
                 <LearnWiki />
               )}
+{activeSection === 'profile' && (
+                <ProfileView user={user} logout={logout} />
+              )}
+              {activeSection === 'playground' && <ApiPlayground playground={playground} setPlayground={setPlayground} onRun={handleRun} selectedLang={selectedLang} setSelectedLang={setSelectedLang} useProxy={useProxy} setUseProxy={setUseProxy} />}
             </div>
+
+
             <div className="space-y-6">
               <SystemHealth services={services} />
             </div>
@@ -381,8 +392,10 @@ function ApiPlayground({ playground, setPlayground, onRun }) {
             <option>GET</option>
             <option>POST</option>
             <option>PUT</option>
-            <option>DELETE</option>
+<option>DELETE</option>
+            <option>PATCH</option>
           </select>
+
           <input
             value={playground.url}
             onChange={(e) => setPlayground(p => ({ ...p, url: e.target.value }))}
