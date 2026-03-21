@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { cls } from '../utils/cls';
-import { Activity, Database, Zap, Clock, User as UserIcon, Terminal, BookOpen } from 'lucide-react'
+import { cls } from '../utils/cls';\nimport { motion } from 'framer-motion';\nimport { Activity, Database, Zap, Clock, User as UserIcon, Terminal, BookOpen } from 'lucide-react'
 
 
 // SVG Icons (pure, no external deps)
@@ -182,8 +181,7 @@ export default function ModernDashboard() {
     { id: "services", label: "Services", icon: DatabaseIcon },
 { id: "logs", label: "System Logs", icon: Terminal, href: "/logs" },
 
-    { id: "wiki", label: "Learning Wiki", icon: BookOpenIcon, href: "/learn" }
-  ];
+{ id: "wiki", label: "Learning Wiki", icon: BookOpenIcon }\n  ];
 
   return (
     <div className={cls("min-h-screen bg-[#020617] text-white transition-all duration-300")}>
@@ -257,8 +255,7 @@ export default function ModernDashboard() {
         <div className="p-6 md:p-8 pb-24 md:pb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="mb-1 text-2xl font-semibold">{activeSection === 'health' ? 'System Health' : activeSection === 'playground' ? 'API Playground' : 'Services'}</h1>
-              <p className="text-sm text-cyan-300/60">Monitor your API infrastructure and services</p>
+              <h1 className="mb-1 text-2xl font-semibold">{activeSection === 'health' ? 'System Health' : activeSection === 'playground' ? 'API Playground' : activeSection === 'wiki' ? 'Learning Wiki' : 'Services'}</h1>\n              <p className="text-sm text-cyan-300/60">{activeSection === 'wiki' ? 'Curated REST API learning resources' : 'Monitor your API infrastructure and services'}</p>
             </div>
             <div className="flex items-center gap-4">
                 <div className="text-right">
@@ -286,39 +283,7 @@ export default function ModernDashboard() {
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
               {activeSection === 'playground' && <ApiPlayground playground={playground} setPlayground={setPlayground} onRun={handleRun} />}
-              {/* Activity table placeholder */}
-              <div className="rounded-xl border border-transparent bg-[#0f172a] p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Recent Activity</h3>
-                </div>
-                <div className="mt-3 text-xs text-cyan-200/80">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="text-cyan-300/60">
-                        <th className="py-2">Time</th>
-                        <th className="py-2">Event</th>
-                        <th className="py-2">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-t border-[#021224]">
-                        <td className="py-2">12:04</td>
-                        <td className="py-2">GET /api/health</td>
-                        <td className="py-2 text-cyan-300">200 OK</td>
-                      </tr>
-                      <tr className="border-t border-[#021224]">
-                        <td className="py-2">11:59</td>
-                        <td className="py-2">POST /api/run</td>
-                        <td className="py-2 text-amber-400">202</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-6">
-              <SystemHealth services={services} />
-            </div>
+              {/* Activity table placeholder */}\n              <div className="rounded-xl border border-transparent bg-[#0f172a] p-4">\n                <div className="flex items-center justify-between">\n                  <h3 className="text-sm font-semibold">Recent Activity</h3>\n                </div>\n                <div className="mt-3 text-xs text-cyan-200/80">\n                  <table className="w-full text-left">\n                    <thead>\n                      <tr className="text-cyan-300/60">\n                        <th className="py-2">Time</th>\n                        <th className="py-2">Event</th>\n                        <th className="py-2">Status</th>\n                      </tr>\n                    </thead>\n                    <tbody>\n                      <tr className="border-t border-[#021224]">\n                        <td className="py-2">12:04</td>\n                        <td className="py-2">GET /api/health</td>\n                        <td className="py-2 text-cyan-300">200 OK</td>\n                      </tr>\n                      <tr className="border-t border-[#021224]">\n                        <td className="py-2">11:59</td>\n                        <td className="py-2">POST /api/run</td>\n                        <td className="py-2 text-amber-400">202</td>\n                      </tr>\n                    </tbody>\n                  </table>\n                </div>\n              </div>\n              {activeSection === 'wiki' && (\n                <LearnWiki />\n              )}\n            </div>\n            <div className="space-y-6">\n              <SystemHealth services={services} />\n            </div>
           </div>
         </div>
       </main>
@@ -418,8 +383,7 @@ function ApiPlayground({ playground, setPlayground, onRun }) {
   );
 }
 
-function SystemHealth({ services }) {
-  const getStatusColor = (status) => {
+const containerVariants = {\n  hidden: { opacity: 0 },\n  show: {\n    opacity: 1,\n    transition: {\n      staggerChildren: 0.1\n    }\n  }\n};\n\nconst cardVariants = {\n  hidden: { opacity: 0, y: 20, scale: 0.95 },\n  show: {\n    opacity: 1,\n    y: 0,\n    scale: 1,\n    transition: {\n      type: "spring",\n      stiffness: 260,\n      damping: 20\n    }\n  },\n  hover: {\n    scale: 1.02,\n    y: -5,\n    transition: {\n      type: "spring",\n      stiffness: 300,\n      damping: 20\n    }\n  },\n  tap: {\n    scale: 0.98\n  }\n};\n\nfunction LearnWiki() {\n  const wikiTopics = [\n    {\n      title: "REST API Fundamentals",\n      description: "Understand HTTP methods, status codes, headers & REST principles",\n      link: "https://restfulapi.net/"\n    },\n    {\n      title: "API Design Best Practices",\n      description: "Versioning, authentication, rate limiting & HATEOAS patterns",\n      link: "https://apisyouwonthate.com/"\n    },\n    {\n      title: "OpenAPI Specification",\n      description: "Swagger documentation, code generation & API contracts",\n      link: "https://swagger.io/specification/"\n    },\n    {\n      title: "Authentication & Security",\n      description: "JWT, OAuth2, API keys, CORS & security headers",\n      link: "https://auth0.com/docs"\n    },\n    {\n      title: "API Testing Strategies",\n      description: "Postman, Newman, unit/integration testing & mocking",\n      link: "https://learning.postman.com/docs/"\n    },\n    {\n      title: "API Performance",\n      description: "Caching, pagination, compression & optimization techniques",\n      link: "https://www.nginx.com/blog/api-performance/"\n    }\n  ];\n\n  return (\n    <motion.div\n      variants={containerVariants}\n      initial="hidden"\n      animate="show"\n      className="overflow-hidden rounded-xl border border-slate-200/50 bg-white/5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-800/30"\n    >\n      <div className="border-b border-slate-200/50 bg-white/10 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/20">\n        <h3 className="text-lg font-semibold text-white">Quick Learn Cards</h3>\n        <p className="mt-1 text-sm text-cyan-200/70">Click cards to dive deeper into API mastery</p>\n      </div>\n      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">\n        {wikiTopics.map((topic, index) => (\n          <motion.div\n            key={index}\n            variants={cardVariants}\n            whileHover="hover"\n            whileTap="tap"\n            className={cls(\n              "group relative overflow-hidden rounded-xl border border-slate-200/30 p-6 cursor-pointer transition-all hover:shadow-[0_20px_40px_rgba(6,182,212,0.15)]",\n              "border-transparent bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm hover:bg-slate-800/70"\n            )}\n          >\n            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />\n            <div className="relative z-10">\n              <h4 className="text-lg font-semibold text-white mb-3 group-hover:text-cyan-300 transition-colors">{topic.title}</h4>\n              <p className="text-sm text-cyan-100/80 mb-4 leading-relaxed">{topic.description}</p>\n              <a\n                href={topic.link}\n                target="_blank"\n                rel="noopener noreferrer"\n                className="inline-flex items-center gap-2 text-sm font-medium text-cyan-400 hover:text-cyan-300 group-hover:translate-x-1 transition-transform"\n              >\n                Learn More\n                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">\n                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />\n                </svg>\n              </a>\n            </div>\n          </motion.div>\n        ))}\n      </div>\n    </motion.div>\n  );\n}\n\nfunction SystemHealth({ services }) {\n  const getStatusColor = (status) => {
     switch (status) {
       case "operational": return "bg-emerald-400";
       case "degraded": return "bg-yellow-400";
