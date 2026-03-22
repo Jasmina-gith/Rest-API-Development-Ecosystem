@@ -1,13 +1,13 @@
-import { Router } from "express"
+import { Router, Request, Response } from "express"
 import { authorize } from "../utils"
-import { AuthResponse } from "../types"
+import { AuthRequest, AuthResponse } from "../types"
 import Pool from '../database'
 
 const router = Router()
 
-router.get('/', authorize, async (req: Request, res: Response) => {
+router.get('/', authorize, async (req: any, res: any) => {
     try {
-        const userId = res.user?.userId
+        const userId = (req as AuthRequest).user?.userId
         const {
             page = 1,
             limit = 10,
@@ -15,7 +15,7 @@ router.get('/', authorize, async (req: Request, res: Response) => {
             sortBy = 'updated_at',
             sortOrder = 'desc',
             state
-        } = req.query
+        } = (req as AuthRequest).query
 
         const pageNum = parseInt(page as string, 10)
         const limitNum = parseInt(limit as string, 10)
@@ -78,7 +78,7 @@ router.get('/', authorize, async (req: Request, res: Response) => {
     }
 })
 
-router.post('/new', authorize, (req, res: AuthResponse) => {
+router.post('/new', authorize, (req: AuthRequest, res: AuthResponse) => {
     const name = req.body.projectName
 
     if (!name) {
@@ -94,7 +94,7 @@ router.post('/new', authorize, (req, res: AuthResponse) => {
         }
 
         const project = data[0]
-        Pool.from('Collaborators').insert({ project_id: data![0].project_id, user_id: res.user!.userId, is_owner: true })
+        Pool.from('Collaborators').insert({ project_id: data![0].project_id, user_id: req.user!.userId, is_owner: true })
         .then(({ error }) => {
             if (error) {
                 res.status(500).json({ error: error.message })
@@ -107,7 +107,7 @@ router.post('/new', authorize, (req, res: AuthResponse) => {
     })
 })
 
-router.patch('/state', authorize, (req, res: AuthResponse) => {
+router.patch('/state', authorize, (req: AuthRequest, res: AuthResponse) => {
     const state = req.body.state
     const projectId = req.body.projectId
 
@@ -121,7 +121,7 @@ router.patch('/state', authorize, (req, res: AuthResponse) => {
         return;
     }
 
-    projectCollaboratorAction(res, projectId, () => {
+    projectCollaboratorAction(req, res, projectId, () => {
         Pool.from('Projects').update({ state }).eq('project_id', projectId).select()
         .then(async ({ error }) => {
             if (error) {
@@ -134,7 +134,7 @@ router.patch('/state', authorize, (req, res: AuthResponse) => {
     })
 })
 
-router.patch('/rename', authorize, (req, res: AuthResponse) => {
+router.patch('/rename', authorize, (req: AuthRequest, res: AuthResponse) => {
     const projectId = req.body.projectId
     const projectName = req.body.projectName
 
@@ -148,7 +148,7 @@ router.patch('/rename', authorize, (req, res: AuthResponse) => {
         return;
     }
 
-    projectCollaboratorAction(res, projectId, () => {
+    projectCollaboratorAction(req, res, projectId, () => {
         Pool.from('Projects').update({ project_name: projectName }).eq('project_id', projectId)
         .then(async ({ error }) => {
             if (error) {
@@ -161,7 +161,7 @@ router.patch('/rename', authorize, (req, res: AuthResponse) => {
     })
 })
 
-router.get('/collaborator/:id', authorize, async (req, res: AuthResponse) => {
+router.get('/collaborator/:id', authorize, async (req: AuthRequest, res: AuthResponse) => {
     const projectId = req.params.id
     Pool.from('Collaborators').select().eq('project_id', projectId)
     .then(async ({ data, error }) => {
@@ -172,7 +172,7 @@ router.get('/collaborator/:id', authorize, async (req, res: AuthResponse) => {
 
         let found = false
         for (let user of users) {
-            if (user.user_id == res.user.userId) {
+            if (user.user_id == req.user!.userId) {
                 found = true
                 break;
             }
@@ -200,7 +200,7 @@ router.get('/collaborator/:id', authorize, async (req, res: AuthResponse) => {
     })
 })
 
-router.post('/collaborator', authorize, async (req, res: AuthResponse) => {
+router.post('/collaborator', authorize, async (req: AuthRequest, res: AuthResponse) => {
     const projectId = req.body.projectId
     const username = req.body.username
     
@@ -231,7 +231,7 @@ router.post('/collaborator', authorize, async (req, res: AuthResponse) => {
     }
 
     const userId = user.user_id
-    projectOwnerAction(res, projectId, () => {
+    projectOwnerAction(req, res, projectId, () => {
         Pool.from('Collaborators').insert({ user_id: userId, project_id: projectId }).select()
         .then(({ error }) => {
             if (error) {
@@ -245,7 +245,7 @@ router.post('/collaborator', authorize, async (req, res: AuthResponse) => {
 
 })
 
-router.post('/collaborator/remove', authorize, async (req, res: AuthResponse) => {
+router.post('/collaborator/remove', authorize, async (req: AuthRequest, res: AuthResponse) => {
     const projectId = req.body.projectId
     const username = req.body.username
     
@@ -276,7 +276,7 @@ router.post('/collaborator/remove', authorize, async (req, res: AuthResponse) =>
     }
 
     const userId = user.user_id
-    projectOwnerAction(res, projectId, () => {
+    projectOwnerAction(req, res, projectId, () => {
         Pool.from('Collaborators').delete().eq('project_id', projectId).eq('user_id', userId).select()
         .then(({ error }) => {
             if (error) {
@@ -290,7 +290,7 @@ router.post('/collaborator/remove', authorize, async (req, res: AuthResponse) =>
     
 })
 
-router.delete('/remove/:id', authorize, (req, res: AuthResponse) => {
+router.delete('/remove/:id', authorize, (req: AuthRequest, res: AuthResponse) => {
     const id = req.params.id
 
     if (!id) {
@@ -298,7 +298,7 @@ router.delete('/remove/:id', authorize, (req, res: AuthResponse) => {
         return;
     }
 
-    projectOwnerAction(res, id, () =>
+    projectOwnerAction(req, res, id, () =>
         Pool.from('Projects').delete().eq('project_id', id).select()
         .then(async ({ data, error }) => {
             if (error) {
@@ -312,21 +312,21 @@ router.delete('/remove/:id', authorize, (req, res: AuthResponse) => {
 
 })
 
-function projectOwnerAction(res: AuthResponse, projectId: string, action: Function) {
+function projectOwnerAction(req: AuthRequest, res: AuthResponse, projectId: string, action: Function) {
     Pool.from('Collaborators').select('user_id').eq('project_id', projectId).eq('is_owner', true)
     .then(async ({ data: users, error }) => {
-        checkProjectAuth(res, users, error, action)
+        checkProjectAuth(req, res, users, error, action)
     })
 }
 
-function projectCollaboratorAction(res: AuthResponse, projectId: string, action: Function) {
+function projectCollaboratorAction(req: AuthRequest, res: AuthResponse, projectId: string, action: Function) {
     Pool.from('Collaborators').select('user_id').eq('project_id', projectId)
     .then(async ({ data: users, error }) => {
-        checkProjectAuth(res, users, error, action)
+        checkProjectAuth(req, res, users, error, action)
     })
 }
 
-async function checkProjectAuth(res: AuthResponse, users: any, error: any, action: Function) {
+async function checkProjectAuth(req: AuthRequest, res: AuthResponse, users: any, error: any, action: Function) {
     if (error) {
         res.status(500).json({ error: error.message })
         return;
@@ -339,7 +339,7 @@ async function checkProjectAuth(res: AuthResponse, users: any, error: any, actio
 
     let found = false
     for (let user of users) {
-        if (user.user_id == res.user.userId) {
+        if (user.user_id == req.user!.userId) {
             found = true
             break;
         }

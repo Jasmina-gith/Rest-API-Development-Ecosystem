@@ -29,7 +29,7 @@ axiosJwt.interceptors.request.use(async config => {
         await refresh()
     }
 
-    config.headers.Authorization = `BEARER ${getCookie('auth')}`
+config.headers.Authorization = `Bearer ${getCookie('auth')}`
     return config
 }, err => Promise.reject(err))
 
