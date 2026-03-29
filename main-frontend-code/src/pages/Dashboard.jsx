@@ -1,222 +1,214 @@
-import { useContext, useEffect, useState } from 'react'
-import AuthContext from '../context/AuthContext'
-import { getMyProjects } from '../api/projects'
-import Layout from '../components/layout/Layout'
-import { Link } from 'react-router-dom'
+import { useContext, useEffect, useState } from 'react';
+import AuthContext from '../context/AuthContext';
+import { getMyProjects } from '../api/projects';
+import Layout from '../components/layout/Layout';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
-const StatCard = ({ title, value, icon, color = 'blue' }) => {
-  const colorClasses = {
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    yellow: 'bg-yellow-500',
-    red: 'bg-red-500'
-  }
+const StatCard = ({ title, value, icon, color = 'cyan' }) => {
+  const colorGradients = {
+    cyan: 'from-cyan-400 to-blue-500',
+    pink: 'from-pink-400 to-rose-500',
+    purple: 'from-purple-400 to-indigo-500',
+    emerald: 'from-emerald-400 to-teal-500'
+  };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+    <motion.div 
+      whileHover={{ scale: 1.02 }}
+      className="bg-white/5 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 shadow-2xl ring-1 ring-white/10"
+    >
       <div className="flex items-center">
-        <div className={`p-3 rounded-full ${colorClasses[color]} text-white`}>
-          <span className="material-symbols-outlined text-2xl">{icon}</span>
+        <div className={`p-4 rounded-2xl bg-gradient-to-br ${colorGradients[color]} text-white shadow-lg`}>
+          <span className="material-symbols-outlined text-3xl">{icon}</span>
         </div>
-        <div className="ml-4">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">{value}</p>
+        <div className="ml-5">
+          <p className="text-sm font-medium text-slate-400 uppercase tracking-wider">{title}</p>
+          <p className="text-4xl font-bold text-white mt-1">{value}</p>
         </div>
       </div>
-    </div>
-  )
-}
+    </motion.div>
+  );
+};
 
 const Dashboard = () => {
-  const { user } = useContext(AuthContext)
-  const [projects, setProjects] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { user } = useContext(AuthContext);
+  const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadProjects()
-  }, [])
+    // 1. AUTH CHECK
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      window.location.href = '/';
+      return;
+    }
+    loadProjects();
+  }, []);
 
   const loadProjects = async () => {
     try {
-      const data = await getMyProjects()
-      setProjects(data)
+      // 2. FETCH TIMEOUT GUARD
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('TIMEOUT')), 5000);
+      });
+
+      const data = await Promise.race([getMyProjects(), timeoutPromise]);
+      setProjects(data || []);
     } catch (error) {
-      console.error('Error loading projects:', error)
+      console.error('Error loading API projects:', error);
+      
+      // 4. ERROR HANDLING 401
+      if (error.response?.status === 401) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/';
+      }
+      
+      // If TIMEOUT or any other error occurs, don't crash the UI and set empty projects
+      setProjects([]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <Layout>
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <div className="min-h-[85vh] bg-[#020617] relative p-8 rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex items-center justify-center">
+          <div className="absolute inset-0 -z-10">
+            <motion.div 
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#0ea5e9]/30 rounded-full blur-[100px] animate-pulse" 
+            />
           </div>
-
-          {/* Skeleton loaders */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-                  <div className="ml-4 space-y-2">
-                    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
-                    <div className="h-8 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 animate-pulse">
-            <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-48 mb-4"></div>
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="flex flex-col items-center">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+              className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full shadow-[0_0_30px_rgba(14,165,233,0.5)]"
+            />
+            <p className="text-cyan-400 font-medium text-lg mt-6 animate-pulse">Synchronizing Workspace...</p>
           </div>
         </div>
       </Layout>
-    )
+    );
   }
 
-  const recentProjects = projects.slice(0, 3)
+  const recentProjects = projects.slice(0, 3);
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Welcome back, {user?.username || user?.email || 'User'}!
-          </p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Projects"
-            value={projects.length}
-            icon="folder"
-            color="blue"
+      <div className="min-h-[85vh] bg-[#020617] relative p-4 sm:p-8 rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+        
+        {/* Glassmorphism Orbs for Dashboard background */}
+        <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+          <motion.div
+            className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#0ea5e9]/10 rounded-full blur-[100px]"
+            animate={{ y: [0, -30, 0], scale: [1, 1.05, 1] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />
-          <StatCard
-            title="Active Projects"
-            value={projects.filter(p => p.isActive !== false).length}
-            icon="check_circle"
-            color="green"
-          />
-          <StatCard
-            title="API Tests"
-            value="0" // You can implement this based on your backend
-            icon="api"
-            color="yellow"
-          />
-          <StatCard
-            title="Team Members"
-            value="1" // You can implement this based on your backend
-            icon="group"
-            color="red"
+          <motion.div
+            className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#ec4899]/10 rounded-full blur-[100px]"
+            animate={{ y: [0, 20, 0], scale: [1, 0.95, 1] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           />
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="relative z-10 space-y-10">
+          
+          {/* Header Area */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white/5 backdrop-blur-3xl border border-white/10 p-8 rounded-3xl shadow-2xl ring-1 ring-cyan-500/20">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400 tracking-tight mb-2">
+                REST API Ecosystem
+              </h1>
+              <p className="text-slate-300 text-lg font-light">
+                Welcome back, {user?.username || user?.email || 'Architect'}. Let's Build.
+              </p>
+            </div>
+            
             <Link
               to="/projects"
-              className="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(14,165,233,0.3)] transition-all flex items-center justify-center gap-2 group"
             >
-              <span className="material-symbols-outlined text-2xl text-blue-600 mr-3">add</span>
-              <div>
-                <h3 className="font-medium text-gray-900 dark:text-white">Create Project</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Start a new API testing project</p>
-              </div>
-            </Link>
-            <Link
-              to="/api-testing"
-              className="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              <span className="material-symbols-outlined text-2xl text-green-600 mr-3">code</span>
-              <div>
-                <h3 className="font-medium text-gray-900 dark:text-white">API Testing</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Test your APIs</p>
-              </div>
-            </Link>
-            <Link
-              to="/profile"
-              className="flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              <span className="material-symbols-outlined text-2xl text-purple-600 mr-3">person</span>
-              <div>
-                <h3 className="font-medium text-gray-900 dark:text-white">Profile Settings</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Manage your account</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Recent Projects */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Projects</h2>
-            <Link
-              to="/projects"
-              className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 text-sm font-medium"
-            >
-              View all
+              <span className="material-symbols-outlined transition-transform group-hover:rotate-90">add</span>
+              New Project
             </Link>
           </div>
 
-          {recentProjects.length === 0 ? (
-            <div className="text-center py-8">
-              <span className="material-symbols-outlined text-6xl text-gray-400 mb-4">folder_off</span>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">No projects yet</p>
-              <Link
-                to="/projects"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Create your first project
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <StatCard title="Total Projects" value={projects.length} icon="folder" color="cyan" />
+            <StatCard title="Active APIs" value={projects.filter(p => p.isActive !== false).length} icon="check_circle" color="emerald" />
+            <StatCard title="Test Scenarios" value="0" icon="biotech" color="pink" />
+            <StatCard title="Team Members" value="1" icon="group" color="purple" />
+          </div>
+
+          {/* Recent Projects Section */}
+          <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl ring-1 ring-white/5">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <span className="material-symbols-outlined text-pink-500">history</span>
+                Recent Projects
+              </h2>
+              <Link to="/projects" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors border-b border-transparent hover:border-cyan-400">
+                View all Catalog →
               </Link>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {recentProjects.map((project) => (
-                <div key={project.projectId} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <div className="flex items-center">
-                    <span className="material-symbols-outlined text-2xl text-blue-600 mr-3">folder</span>
-                    <div>
-                      <h3 className="font-medium text-gray-900 dark:text-white">{project.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Created {new Date(project.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    to={`/api-testing?project=${project.projectId}`}
-                    className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 text-sm font-medium"
-                  >
-                    Open
-                  </Link>
+
+            {recentProjects.length === 0 ? (
+              <div className="text-center py-16 bg-black/20 rounded-2xl border border-white/10 flex flex-col items-center justify-center">
+                <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-6 ring-1 ring-white/10">
+                  <span className="material-symbols-outlined text-5xl text-slate-500">folder_off</span>
                 </div>
-              ))}
-            </div>
-          )}
+                <h3 className="text-xl font-bold text-white mb-2">No Active Architecture Found</h3>
+                <p className="text-slate-400 text-lg mb-8 max-w-sm">
+                  Initialize your first project infrastructure to begin testing your REST services.
+                </p>
+                <Link
+                  to="/projects"
+                  className="px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(236,72,153,0.3)] transition-all"
+                >
+                  Configure Workspace
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentProjects.map((project, idx) => (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    key={project.projectId} 
+                    className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-cyan-500/30 transition-all cursor-pointer shadow-lg"
+                  >
+                    <div className="flex items-center mb-4 sm:mb-0">
+                      <div className="p-4 bg-cyan-500/10 rounded-xl mr-5 text-cyan-400 group-hover:scale-110 transition-transform">
+                        <span className="material-symbols-outlined text-3xl">api</span>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-xl text-white mb-1 tracking-wide">{project.name}</h3>
+                        <p className="text-sm text-slate-400 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">schedule</span>
+                          Deployed {new Date(project.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      to={`/api-testing?project=${project.projectId}`}
+                      className="w-full sm:w-auto text-center px-8 py-3 bg-white/5 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500 hover:text-white font-bold rounded-xl transition-all shadow-[0_0_10px_rgba(14,165,233,0.1)] hover:shadow-[0_0_20px_rgba(14,165,233,0.4)]"
+                    >
+                      Connect Interface
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Layout>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

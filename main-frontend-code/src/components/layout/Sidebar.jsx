@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import AuthContext from '../../context/AuthContext'
 import ProfileView from '../ProfileView.jsx'
 import { axiosJwt } from '../../api/axios'
@@ -53,10 +53,8 @@ const { user, logout } = useContext(AuthContext)
               <li key={item.name}>
                 <Link
                   to={item.href}
-                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                    isActive
-                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
-                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all group ${
+                    isActive ? 'bg-indigo-100 text-[#00f7ff] shadow-[0_0_10px_rgba(0,247,255,0.3)] dark:bg-indigo-900 dark:text-[#00f7ff] dark:shadow-[0_0_10px_rgba(0,247,255,0.5)]' : 'text-gray-700 hover:bg-gray-100 hover:text-[#00f7ff] dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-[#00f7ff]'
                   }`}
                 >
                   <span className="material-symbols-outlined mr-3 text-lg">
@@ -91,7 +89,7 @@ const { user, logout } = useContext(AuthContext)
                   {loadingProfile ? (
                     <div className="p-4 text-sm text-gray-500">Loading...</div>
                   ) : profileUser ? (
-                    <ProfileView user={profileUser} logout={user.logout} />
+                  <ProfileView user={profileUser} logout={logout} />
                   ) : (
                     <div className="p-4 text-sm text-gray-500">Failed to load profile</div>
                   )}
