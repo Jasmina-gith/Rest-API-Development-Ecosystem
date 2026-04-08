@@ -1,3 +1,17 @@
+# Push to Repo Steps (blackboxai/backend-push)
+
+## Status: In Progress
+
+### 1. Clean ignored files (.env, database.db)
+### 2. git add -A
+### 3. git commit -m "chore(backend): ..."
+### 4. git push origin blackboxai/profile-feature
+### 5. Verify on GitHub
+
+Backend running: http://localhost:5000/api-docs
+
+Previous TODO content preserved below:
+
 # Backend Dashboard Management Endpoints TODO
 
 ## Steps (Approved - In Progress)
@@ -22,4 +36,3 @@
 
 ### 6. 🚀 Deploy Render, ✅ Complete
 
-### 6. 🚀 Deploy Render, ✅ Complete

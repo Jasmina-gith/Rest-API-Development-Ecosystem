@@ -1,8 +1,9 @@
 import { Router, Response as ExpResponse } from "express"
+import { authorize } from '../utils'
 
 const router = Router()
 
-router.post('/', async (req, res) => {
+router.post('/', authorize, async (req, res) => {
     try {
         const { url, method, headers, body } = parseRequest(req.body)
         const response = await fetch(url, { method, headers, body })

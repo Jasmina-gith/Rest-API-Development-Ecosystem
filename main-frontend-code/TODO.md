@@ -1,29 +1,12 @@
-# ModernDashboard Integration TODO
+# Login Fix Progress
 
-## Steps (Approved Plan - In Progress)
+**Plan Steps:**
+- [x] 1. Create TODO.md with approved plan steps
+- [ ] 2. Update LoginPage.jsx API paths (/auth/* → /api/auth/*)
+- [ ] 3. Update FixedLoginPage.jsx API paths (/auth/* → /api/auth/*)
+- [ ] 4. Test login/register flows
+- [ ] 5. Verify token storage and dashboard redirect
+- [ ] 6. Complete task
 
-### 1. ✅ Plan confirmed and approved by user
-### 2. ✅ Create src/components/ModernDashboard.jsx
-   - Complete icons (SVG: all needed)
-   - Import cn from utils/cls.js
-   - useEffect: poll Render /api/health → update healthStatus/services
-   - Full sidebar nav: System Health, API Playground, Services, Logs, Learning Wiki (/learn)
-   - Stats cards with live data
-   - ApiPlayground: method/url/body/Run → axios to Render backend → JSON response
-   - SystemHealth services list
+**Status:** Starting implementation...
 
-### 3. ✅ Update src/App.jsx
-   - Add import ModernDashboard
-   - Add Route path="/pro" with ProtectedRoute
-   - Add Route path="/learn" (placeholder/TODO)
-
-### 4. 🔍 Install deps if needed
-   - npm i clsx tailwind-merge (check cls.js first)
-
-### 5. 🧪 Test
-   - npm run dev
-   - http://localhost:5173/pro
-   - Health live update
-   - Playground Run → response
-
-### 6. ✅ Complete

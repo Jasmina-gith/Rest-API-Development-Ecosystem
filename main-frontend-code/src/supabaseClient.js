@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase credentials from environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Supabase not configured for local - using dummy to prevent crash
+export const supabase = createClient('https://dummy.supabase.co', 'dummy')
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)

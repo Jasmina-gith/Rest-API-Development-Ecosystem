@@ -1,590 +1,203 @@
-import { useState, useEffect, useContext } from "react";
-import { AuthContext } from '../context/AuthContext';
+import React, { useState, useContext } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
+import { axiosJwt } from '../api/axios';
+import { translateOutput, getLanguage } from '../utils/translator';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { cls } from '../utils/cls';
 import { motion } from 'framer-motion';
-import { Activity, Database, Zap, Clock, User as UserIcon, Terminal, BookOpen } from 'lucide-react';
+import Layout from './layout/Layout';
 
-
-// SVG Icons (pure, no external deps)
-const ClockIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
+const MethodSelect = ({ value, onChange }) => (
+  <select
+    value={value}
+    onChange={(e) => onChange(e.target.value)}
+    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+  >
+    <option>GET</option>
+    <option>POST</option>
+    <option>PUT</option>
+    <option>PATCH</option>
+    <option>DELETE</option>
+  </select>
 );
 
-const DatabaseIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.58 4 8 4s8-1.79 8-4M4 7c0-2.21 3.58-4 8-4s8 1.79 8 4m0 5c0 2.21-3.58 4-8 4s-8-1.79-8-4" />
-  </svg>
-);
+const ModernDashboard = () => {
+  const [searchParams] = useSearchParams();
+  const projectId = searchParams.get('project');
+  const { user } = useContext(AuthContext);
 
-const ActivityIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-  </svg>
-);
+  const [url, setUrl] = useState('https://jsonplaceholder.typicode.com/posts/1');
+  const [method, setMethod] = useState('GET');
+  const [headers, setHeaders] = useState({ 'Content-Type': 'application/json' });
+  const [body, setBody] = useState('');
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [contentType, setContentType] = useState('application/json');
 
-const ZapIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-  </svg>
-);
-
-const PlayIcon = () => (
-  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.665z" />
-  </svg>
-);
-
-const ChevronLeft = () => (
-  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-  </svg>
-);
-
-const ChevronRight = () => (
-  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-  </svg>
-);
-
-const TrendingUp = () => (
-  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-  </svg>
-);
-
-const TrendingDown = () => (
-  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-  </svg>
-);
-
-const CheckCircle = () => (
-  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const AlertCircle = () => (
-  <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const BookOpenIcon = () => (
-  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-  </svg>
-);
-
-// Axios for Render backend (health + playground)
-import axios from 'axios';
-
-const RENDER_BASE_URL = `${import.meta.env.VITE_API_URL}/dashboard`;
-
-function createHealthAxios() {
-  return axios.create({ baseURL: RENDER_BASE_URL });
-}
-
-export default function ModernDashboard() {
-  const authContext = useContext(AuthContext);
-  const { user, logout } = authContext || {};
-  const [activeSection, setActiveSection] = useState("health");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [healthStatus, setHealthStatus] = useState("Checking...");
-  const [services, setServices] = useState([]);
-const [playground, setPlayground] = useState({
-    method: "GET",
-    url: "/api/health",
-    body: "",
-    response: null,
-    loading: false
-  });
-  const [selectedLang, setSelectedLang] = useState('JSON');
-  const [useProxy, setUseProxy] = useState(false);
-
-
-  const axiosHealth = createHealthAxios();
-
-  // Live health check
-  useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        const res = await axiosHealth.get("/health");
-        setHealthStatus(res.data.status === "UP" ? "Healthy" : res.data.status === "DOWN" ? "Down" : "Degraded");
-        setServices(res.data.services || res.data.servicesStatus || [
-          { name: "API Gateway", status: "operational", latency: "12ms" },
-          { name: "Database", status: "operational", latency: "24ms" },
-          { name: "Auth Service", status: "operational", latency: "8ms" }
-        ]);
-      } catch (err) {
-        setHealthStatus("Down");
-        setServices([{ name: "API Gateway", status: "degraded", latency: "N/A" }]);
-      }
-    };
-
-    checkHealth();
-    const interval = setInterval(checkHealth, 10000); // 10s poll
-    return () => clearInterval(interval);
-  }, []);
-
-  // Playground Run
-  const handleRun = async () => {
-    setPlayground(p => ({ ...p, loading: true, response: null }));
+  const runProxy = async () => {
+    setLoading(true);
     try {
-      let res;
-      if (playground.method === "GET") {
-        res = await axiosHealth.get(playground.url);
-      } else {
-        res = await axiosHealth.post(playground.url, JSON.parse(playground.body || "{}"));
-      }
-      setPlayground(p => ({ ...p, response: res.data, loading: false }));
+      const proxyReq = {
+        url,
+        method,
+        headers,
+        body
+      };
+      const res = await axiosJwt.post('/api/proxy', proxyReq);
+      setResponse(res.data);
+      setContentType(res.headers?.['content-type'] || 'text/plain');
     } catch (err) {
-      setPlayground(p => ({ ...p, response: err.response?.data || { error: err.message }, loading: false }));
+      setResponse({ error: err.response?.data || err.message });
+      setContentType('text/plain');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const stats = [
-    {
-      icon: ClockIcon,
-      label: "System Health",
-      value: healthStatus,
-      subValue: services[0]?.latency || "N/A",
-      status: healthStatus === "Healthy" ? "success" : "error",
-    },
-    {
-      icon: DatabaseIcon,
-      label: "Database Status",
-      value: "Connected",
-      subValue: "PostgreSQL v16.2",
-      status: "success"
-    },
-    {
-      icon: ActivityIcon,
-      label: "Requests Today",
-      value: "1.2M",
-      subValue: "Peak: 2.4k/sec",
-      status: "success",
-      trend: { direction: "up", value: "8.3%" }
-    },
-    {
-      icon: ZapIcon,
-      label: "Uptime",
-      value: "99.98%",
-      subValue: "Last 30 days",
-      status: "success"
-    }
-  ];
-
-  const navItems = [
-    { id: "health", label: "System Health", icon: ActivityIcon },
-    { id: "playground", label: "API Playground", icon: PlayIcon },
-    { id: "services", label: "Services", icon: DatabaseIcon },
-{ id: "logs", label: "System Logs", icon: Terminal, href: "/logs" },
-{ id: "profile", label: "Profile", icon: UserIcon },
-{ id: "wiki", label: "Learning Wiki", icon: BookOpenIcon }
-
-  ];
+  const prettyResponse = response?.error ? JSON.stringify(response, null, 2) : translateOutput(JSON.stringify(response), contentType);
 
   return (
-    <div className={cls("min-h-screen bg-[#020617] text-white transition-all duration-300")}>
-      {/* Background */}
-      <div className="fixed inset-0 -z-10 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_20%_10%,rgba(6,182,212,0.06),transparent)]" />
-      </div>
-
-      {/* Sidebar */}
-      <aside className={cls(
-        "fixed left-0 top-0 z-40 flex h-screen w-72 flex-col border-r border-transparent bg-[#070a12]/80 backdrop-blur-md transition-all duration-300 md:block",
-        sidebarCollapsed && "w-20"
-      )}>
-        <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-4 dark:border-slate-800">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500 text-[#021224]">
-            <ZapIcon />
-          </div>
-          {!sidebarCollapsed && (
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold">Professional Dashboard</span>
-                <span className="text-xs text-cyan-300/60">Production v1.0</span>
-
-            </div>
-          )}
-        </div>
-
-        <nav className="flex-1 space-y-1 px-3 py-4 overflow-auto">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => item.href ? window.location.href = item.href : setActiveSection(item.id)}
-              className={cls(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
-                activeSection === item.id
-                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
-              )}
-            >
-              <item.icon className="text-cyan-300" />
-              {!sidebarCollapsed && <span>{item.label}</span>}
-            </button>
-          ))}
-        </nav>
-
-        <div className="px-3 py-4">
-          <div className="mt-4 border-t border-slate-800 pt-4">
-            <div className="flex items-center gap-3">
-<div className="h-10 w-10 rounded-full bg-cyan-600 flex items-center justify-center text-[#021224] cursor-pointer hover:scale-105 transition-transform" onClick={() => setActiveSection('profile')}>
-                <UserIcon />
-              </div>
-
-              <div>
-                <div className="text-sm font-semibold">{localStorage.getItem('displayName') || 'System Admin'}</div>
-                <div className="text-xs text-cyan-300/60">Product</div>
-              </div>
-            </div>
-            <button
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="mt-3 w-full rounded-md py-2 text-sm bg-[#0f172a] border border-cyan-700/20 text-cyan-200"
-            >
-              {sidebarCollapsed ? 'Expand' : 'Collapse'}
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main className={cls(
-        "min-h-screen pt-16 transition-all md:ml-72",
-        sidebarCollapsed && "md:ml-20"
-      )}>
-        <div className="p-6 md:p-8 pb-24 md:pb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="mb-1 text-2xl font-semibold">{activeSection === 'health' ? 'System Health' : activeSection === 'playground' ? 'API Playground' : activeSection === 'wiki' ? 'Learning Wiki' : 'Services'}</h1>
-              <p className="text-sm text-cyan-300/60">{activeSection === 'wiki' ? 'Curated REST API learning resources' : 'Monitor your API infrastructure and services'}</p>
-            </div>
-            <div className="flex items-center gap-4">
-                <div className="text-right">
-                <div className="text-sm font-medium">{localStorage.getItem('displayName') || 'System Admin'}</div>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  <span className="text-[10px] uppercase tracking-widest font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    Production v1.0
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-3 my-8">
-            {stats.slice(0,3).map((stat, i) => (
-              <StatCard key={i} {...stat} />
-            ))}
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-6">
-              {activeSection === 'playground' && <ApiPlayground playground={playground} setPlayground={setPlayground} onRun={handleRun} />}
-              {/* Activity table placeholder */}
-              <div className="rounded-xl border border-transparent bg-[#0f172a] p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">Recent Activity</h3>
-                </div>
-                <div className="mt-3 text-xs text-cyan-200/80">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="text-cyan-300/60">
-                        <th className="py-2">Time</th>
-                        <th className="py-2">Event</th>
-                        <th className="py-2">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr className="border-t border-[#021224]">
-                        <td className="py-2">12:04</td>
-                        <td className="py-2">GET /api/health</td>
-                        <td className="py-2 text-cyan-300">200 OK</td>
-                      </tr>
-                      <tr className="border-t border-[#021224]">
-                        <td className="py-2">11:59</td>
-                        <td className="py-2">POST /api/run</td>
-                        <td className="py-2 text-amber-400">202</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-{activeSection === 'wiki' && (
-                <LearnWiki />
-              )}
-{activeSection === 'profile' && (
-                <ProfileView user={user} logout={logout} />
-              )}
-              {activeSection === 'playground' && <ApiPlayground playground={playground} setPlayground={setPlayground} onRun={handleRun} selectedLang={selectedLang} setSelectedLang={setSelectedLang} useProxy={useProxy} setUseProxy={setUseProxy} />}
-            </div>
-
-
-            <div className="space-y-6">
-              <SystemHealth services={services} />
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}
-
-function StatCard({ icon: Icon, label, value, subValue, status, trend }) {
-  return (
-    <div className={cls(
-      "group relative overflow-hidden rounded-xl border p-5 transition-all duration-300",
-      "border-transparent bg-[#0f172a] hover:shadow-[0_8px_30px_rgba(6,182,212,0.06)]"
-    )}>
-      <div className="relative z-10">
-        <div className="flex items-center justify-between">
-          <div className={cls(
-            "flex h-10 w-10 items-center justify-center rounded-lg bg-[#071226] text-cyan-300"
-          )}>
-            <Icon />
-          </div>
-          {trend && (
-            <div className={cls(
-              "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-cyan-300"
-            )}>
-              {trend.direction === "up" ? <TrendingUp /> : <TrendingDown />}
-              {trend.value}
-            </div>
-          )}
-        </div>
-        <p className="mt-3 text-sm font-medium text-cyan-200">{label}</p>
-        <p className="mt-1 text-2xl font-semibold text-white">{value}</p>
-        {subValue && <p className="mt-1 text-xs text-cyan-300/70">{subValue}</p>}
-      </div>
-    </div>
-  );
-}
-
-function ApiPlayground({ playground, setPlayground, onRun }) {
-  return (
-    <div className="overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-800/50">
-      <div className="flex items-center justify-between border-b border-slate-200/50 bg-white/30 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/30">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">API Playground</h3>
-        <div className="flex items-center gap-2 text-xs text-slate-500">Live connection to Render backend</div>
-      </div>
-      <div className="p-4 space-y-4">
-        {/* Method & URL */}
-        <div className="flex gap-2">
-          <select
-            value={playground.method}
-            onChange={(e) => setPlayground(p => ({ ...p, method: e.target.value }))}
-            className="flex-0 w-20 rounded border border-slate-200 px-2 py-1 text-sm bg-white dark:bg-slate-800 dark:border-slate-700"
-          >
-            <option>GET</option>
-            <option>POST</option>
-            <option>PUT</option>
-<option>DELETE</option>
-            <option>PATCH</option>
-          </select>
-
-          <input
-            value={playground.url}
-            onChange={(e) => setPlayground(p => ({ ...p, url: e.target.value }))}
-            placeholder="/api/health"
-            className="flex-1 rounded border border-slate-200 px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        {/* Body */}
-        {playground.method !== "GET" && (
-          <textarea
-            value={playground.body}
-            onChange={(e) => setPlayground(p => ({ ...p, body: e.target.value }))}
-            placeholder='{"key": "value"}'
-            rows={3}
-            className="w-full rounded border border-slate-200 px-3 py-2 text-sm bg-white dark:bg-slate-800 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-vertical"
-          />
-        )}
-        {/* Run Button */}
-        <button
-          onClick={onRun}
-          disabled={playground.loading}
-          className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <PlayIcon />
-          {playground.loading ? "Running..." : "Run Request"}
-        </button>
-        {/* Response */}
-        {playground.response && (
-          <div className="pt-4 border-t border-slate-200/50">
-            <pre className={cls(
-              "rounded-lg p-4 overflow-auto text-xs",
-              "bg-slate-900 text-emerald-400 border border-slate-700/50"
-            )}>
-              {JSON.stringify(playground.response, null, 2)}
-            </pre>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: "spring",
-      stiffness: 260,
-      damping: 20
-    }
-  },
-  hover: {
-    scale: 1.02,
-    y: -5,
-    transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 20
-    }
-  },
-  tap: {
-    scale: 0.98
-  }
-};
-
-function LearnWiki() {
-  const wikiTopics = [
-    {
-      title: "REST API Fundamentals",
-      description: "Understand HTTP methods, status codes, headers & REST principles",
-      link: "https://restfulapi.net/"
-    },
-    {
-      title: "API Design Best Practices",
-      description: "Versioning, authentication, rate limiting & HATEOAS patterns",
-      link: "https://apisyouwonthate.com/"
-    },
-    {
-      title: "OpenAPI Specification",
-      description: "Swagger documentation, code generation & API contracts",
-      link: "https://swagger.io/specification/"
-    },
-    {
-      title: "Authentication & Security",
-      description: "JWT, OAuth2, API keys, CORS & security headers",
-      link: "https://auth0.com/docs"
-    },
-    {
-      title: "API Testing Strategies",
-      description: "Postman, Newman, unit/integration testing & mocking",
-      link: "https://learning.postman.com/docs/"
-    },
-    {
-      title: "API Performance",
-      description: "Caching, pagination, compression & optimization techniques",
-      link: "https://www.nginx.com/blog/api-performance/"
-    }
-  ];
-
-  return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="overflow-hidden rounded-xl border border-slate-200/50 bg-white/5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-800/30"
-    >
-      <div className="border-b border-slate-200/50 bg-white/10 px-6 py-4 dark:border-slate-800 dark:bg-slate-800/20">
-        <h3 className="text-lg font-semibold text-white">Quick Learn Cards</h3>
-        <p className="mt-1 text-sm text-cyan-200/70">Click cards to dive deeper into API mastery</p>
-      </div>
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {wikiTopics.map((topic, index) => (
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-slate-800 dark:to-slate-900 p-8">
+        <div className="max-w-7xl mx-auto">
           <motion.div
-            key={index}
-            variants={cardVariants}
-            whileHover="hover"
-            whileTap="tap"
-            className={cls(
-              "group relative overflow-hidden rounded-xl border border-slate-200/30 p-6 cursor-pointer transition-all hover:shadow-[0_20px_40px_rgba(6,182,212,0.15)]",
-              "border-transparent bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm hover:bg-slate-800/70"
-            )}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative z-10">
-              <h4 className="text-lg font-semibold text-white mb-3 group-hover:text-cyan-300 transition-colors">{topic.title}</h4>
-              <p className="text-sm text-cyan-100/80 mb-4 leading-relaxed">{topic.description}</p>
-              <a
-                href={topic.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-medium text-cyan-400 hover:text-cyan-300 group-hover:translate-x-1 transition-transform"
-              >
-                Learn More
-                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
-            </div>
+            <h1 className="text-5xl font-black bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent mb-4">
+              Proxy Playground
+            </h1>
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+              Bypass CORS with backend proxy. Test APIs securely with syntax-highlighted responses.
+            </p>
           </motion.div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
 
-function SystemHealth({ services }) {
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "operational": return "bg-emerald-400";
-      case "degraded": return "bg-yellow-400";
-      case "down": return "bg-red-400";
-      default: return "bg-slate-400";
-    }
-  };
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Playground Left */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 dark:border-slate-700/50 p-8"
+            >
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <span className="material-symbols-outlined text-3xl text-blue-500">code</span>
+                Request
+              </h2>
 
-  return (
-    <div className="overflow-hidden rounded-xl border border-slate-200/50 bg-white/50 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-800/50">
-      <div className="border-b border-slate-200/50 bg-white/30 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/30">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Service Status</h3>
-      </div>
-      <div className="p-4 space-y-3 max-h-96 overflow-auto">
-        {services.map((service, i) => (
-          <div key={i} className="flex items-center justify-between py-2">
-            <div>
-              <p className="font-medium text-slate-900 dark:text-white">{service.name}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{service.description || "Core service"}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className={cls("h-3 w-3 rounded-full", getStatusColor(service.status))} />
-              <span className="text-sm font-medium text-slate-900 dark:text-white">{service.status}</span>
-              <span className="text-xs text-slate-500 dark:text-slate-400">{service.latency}</span>
-            </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">URL</label>
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 bg-white/50 dark:bg-slate-900/50 text-lg"
+                    placeholder="https://api.example.com/endpoint"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Method</label>
+                    <MethodSelect value={method} onChange={setMethod} />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Headers (JSON)</label>
+                  <textarea
+                    value={JSON.stringify(headers, null, 2)}
+                    onChange={(e) => {
+                      try {
+                        setHeaders(JSON.parse(e.target.value));
+                      } catch {}
+                    }}
+                    className="w-full h-24 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 resize-vertical font-mono text-sm"
+                    placeholder='{"Content-Type": "application/json"}'
+                  />
+                </div>
+
+                {method !== 'GET' && (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Body</label>
+                    <textarea
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      className="w-full h-32 px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 resize-vertical font-mono"
+                      placeholder="Raw JSON, form data, etc."
+                    />
+                  </div>
+                )}
+
+                <button
+                  onClick={runProxy}
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-8 rounded-2xl text-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Proxying...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span className="material-symbols-outlined">rocket_launch</span>
+                      Send Request
+                    </span>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Response Right - Proxy View */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 dark:border-slate-700/50 p-8"
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <span className="material-symbols-outlined text-3xl text-emerald-500">check_circle</span>
+                Response
+              </h2>
+
+              {loading ? (
+                <div className="flex items-center justify-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                </div>
+              ) : response ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600 dark:text-slate-400">Status: <span className="font-mono bg-emerald-100 dark:bg-emerald-900/50 px-3 py-1 rounded-full text-emerald-800 dark:text-emerald-200">200 OK</span></span>
+                    <span className="text-slate-600 dark:text-slate-400">Type: <span className="font-mono capitalize">{contentType.split(';')[0]}</span></span>
+                  </div>
+                  <div className="h-96 bg-slate-900/50 rounded-2xl p-4 overflow-auto">
+                    <SyntaxHighlighter
+                      language={getLanguage(contentType)}
+                      style={tomorrow}
+                      customStyle={{ margin: 0, borderRadius: '1rem' }}
+                      codeTagProps={{ style: { fontSize: '14px' } }}
+                    >
+                      {prettyResponse}
+                    </SyntaxHighlighter>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-64 text-slate-500 dark:text-slate-400">
+                  <span className="material-symbols-outlined text-6xl mb-4 opacity-50">preview</span>
+                  <p className="text-lg mb-2">Proxy response will appear here</p>
+                  <p className="text-sm">Click "Send Request" to test external APIs</p>
+                </div>
+              )}
+            </motion.div>
           </div>
-        ))}
+        </div>
       </div>
-    </div>
+    </Layout>
   );
-}
+};
 
+export default ModernDashboard;

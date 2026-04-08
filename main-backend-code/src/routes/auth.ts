@@ -20,6 +20,30 @@ router.get('/', authorize, (req, res: AuthResponse) => {
     })
 })
 
+router.get('/me', authorize, (req, res: AuthResponse) => {
+    Pool.from('Users').select('user_id, username, email, role').eq('user_id', res.user?.userId).single()
+    .then(({ data, error }) => {
+        if (error) {
+            res.status(500).json({ error: error.message })
+            return;
+        }
+
+        if (!data) {
+            res.status(404).json({ error: "User not found" })
+            return;
+        }
+
+        const user = {
+            user_id: data.user_id,
+            username: data.username,
+            email: data.email ?? null,
+            role: data.role
+        }
+
+        res.status(200).json(user)
+    })
+})
+
 router.post('/register', async (req,res) => {
     if(req.body.username.length<3) {
         res.status(400).json({ error: "Username field should have atleast 3 characters"})

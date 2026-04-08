@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode'
 import { getCookie, setCookie } from '../utils/utils';
 
 // Use the Render URL if available, otherwise fallback to localhost
-const baseURL = import.meta.env.VITE_API_URL || "http://localhost:3000/";
+const baseURL = import.meta.env.VITE_API_URL || "/api";
 
 export function useAxios() {
     return axios.create({ baseURL })
@@ -29,7 +29,7 @@ axiosJwt.interceptors.request.use(async config => {
         await refresh()
     }
 
-    config.headers.Authorization = `BEARER ${getCookie('auth')}`
+config.headers.Authorization = `Bearer ${getCookie('auth')}`
     return config
 }, err => Promise.reject(err))
 

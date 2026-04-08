@@ -8,9 +8,9 @@ const router = Router()
 router.use(authorize)
 
 // Get dashboard statistics
-router.get('/stats', async (req: AuthRequest, res: Response) => {
+router.get('/stats', authorize, async (req: any, res: any) => {
     try {
-        const userId = req.user?.userId
+        const userId = (req as AuthRequest).user?.userId
 
         // Get user's projects count
         const result1 = await Pool
